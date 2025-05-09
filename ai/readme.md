@@ -1,3 +1,3 @@
 # Artificial Intelligence
 
-Contains AI tools ans samples that can be used in any project
+Contains AI tools and samples that can be used in any project.
