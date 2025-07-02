@@ -1,0 +1,378 @@
+import {
+    McpServer,
+    ResourceTemplate
+} from "@modelcontextprotocol/sdk/server/mcp.js";
+import {
+    StdioServerTransport
+} from "@modelcontextprotocol/sdk/server/stdio.js";
+import {
+    StreamableHTTPServerTransport
+} from "@modelcontextprotocol/sdk/server/streamableHttp.js";
+import { randomUUID } from "node:crypto";
+
+/**
+ * Model context protocol tool.
+ */
+export interface McpTool {
+    "name"?: string;
+    "title"?: string;
+    "description"?: string;
+    "inputSchema"?: any;
+}
+
+/**
+ * Model context protocol prompt.
+ */
+export interface McpPrompt {
+    "name"?: string;
+    "title"?: string;
+    "description"?: string;
+    "arguments"?: any;
+}
+
+/**
+ * Model context protocol resource.
+ */
+export interface McpResource {
+    "name"?: string;
+    "title"?: string;
+    "description"?: string;
+    "uri"?: string;
+    "mimeType"?: string;
+}
+
+/**
+ * mcp http transport model.
+ */
+export interface McpHttpTransportModel {
+    sessionId: string;
+    transport: StreamableHTTPServerTransport;
+}
+
+/**
+ * Model context protocol server base.
+ */
+export class McpServerBase {
+
+    // global.
+    private open: boolean;
+    private mcp: McpServer;
+    private httpTransports: Array<McpHttpTransportModel>;
+
+    /**
+     * Model context protocol server base.
+     * @param {string} name     server name.
+     * @param {string} version  server version.
+     * @param {string} instructions  server instructions.
+     * @param {object} capabilities  server capabilities.
+     * @example
+     *      name: "weather",
+            version: "1.0.0",
+            instructions: "Use this server for....",
+            capabilities: {
+                resources: {},
+                tools: {},
+            }
+     * 
+     */
+    constructor(public name: string, public version: string, instructions: string,
+        public capabilities: {
+            resources: {},
+            tools: {}
+        }
+    ) {
+        // create the server.
+        this.open = false;
+        this.httpTransports = [];
+        this.mcp = new McpServer(
+            {
+                name: name,
+                version: version
+            },
+            {
+                instructions: instructions,
+                capabilities: capabilities
+            });
+    }
+
+    /**
+     * has to MCP server started.
+     * @returns {boolean} true if started; else false.
+     */
+    hasStarted(): boolean {
+        return this.open;
+    }
+
+    /**
+     * get the MCP server, used to register Tools, Resource, Prompts.
+     * @returns {McpServer} the MCP server
+     */
+    getMcpServer(): McpServer {
+        return this.mcp;
+    }
+
+    /**
+     * get the list of mcp http transports.
+     * @returns {McpHttpTransportModel} the mcp http transports
+     */
+    getHttpTransports(): Array<McpHttpTransportModel> {
+        return this.httpTransports;
+    }
+
+    /**
+     * find an MCP Http transport model.
+     * @param {string} sessionId   the unique sessionId.
+     * @returns {McpHttpTransportModel} the mcp http transport model
+     */
+    findHttpTransport(sessionId: string): McpHttpTransportModel | null {
+        return this.httpTransports.find(function (item) {
+            return (item.sessionId === sessionId || item.sessionId === sessionId);
+        })
+    }
+
+    /**
+     * registers a tool with a config object and callback.
+     * @param {string} name         the name of the tool
+     * @param {object} config       the tool configuration   
+     * @param {Function} callback   the callback function.
+     * @returns {boolean} true if register; else false.
+     * @example 
+     *  Add an addition tool:
+     *  "add",
+        {
+            title: "Addition Tool",
+            description: "Add two numbers",
+            inputSchema: { a: z.number(), b: z.number() }
+        },
+        async ({ a, b }) => ({
+            content: [{ type: "text", text: String(a + b) }]
+        })
+     */
+    registerTool(
+        name: string,
+        config: {
+            title?: string;
+            description?: string;
+            inputSchema?: any;
+            outputSchema?: any;
+            annotations?: any;
+        },
+        callback: any
+    ): boolean {
+        let result: boolean = false;
+        try {
+            this.mcp.registerTool(
+                name,
+                {
+                    title: config.title,
+                    description: config.description,
+                    inputSchema: config.inputSchema,
+                    outputSchema: config.outputSchema,
+                    annotations: config.annotations
+                },
+                callback
+            );
+            result = true;
+        } catch (e) {
+            throw e;
+        }
+        return result;
+    }
+
+    /**
+     * registers a resource with a config object and callback.
+     * @param {string} name         the name of the resource
+     * @param {string} uriOrTemplate    the URI or Template.
+     * @param {object} config   the resource configuration 
+     * @param {Function} callback   the callback function.
+     * @returns {boolean} true if register; else false.
+     * @example 
+     *  Application Config:
+     *  "config",
+     *  "config://app",
+        {
+            title: "Application Config",
+            description: "Application configuration data",
+            mimeType: "text/plain"
+        },
+        async (uri) => ({
+            contents: [{
+                uri: uri.href,
+                text: "App configuration here"
+            }]
+        })
+     */
+    registerResource(
+        name: string,
+        uriOrTemplate: string | ResourceTemplate,
+        config: {
+            title?: string;
+            description?: string;
+            mimeType?: string;
+        },
+        callback: any
+    ): boolean {
+        let result: boolean = false;
+        try {
+            this.mcp.registerResource(
+                name,
+                uriOrTemplate,
+                {
+                    title: config.title,
+                    description: config.description,
+                    mimeType: config.mimeType
+                },
+                callback
+            );
+            result = true;
+        } catch (e) {
+            throw e;
+        }
+        return result;
+    }
+
+    /**
+     * registers a prompt with a config object and callback.
+     * @param {string} name         the name of the prompt
+     * @param {object} config   the prompt configuration 
+     * @param {Function} callback   the callback function.
+     * @returns {boolean} true if register; else false.
+     * @example 
+     *  Code Review:
+     *  "review-code",
+        {
+            title: "Code Review",
+            description: "Review code for best practices and potential issues",
+            argsSchema: { code: z.string() }
+        },
+        ({ code }) => ({
+            messages: [{
+                role: "user",
+                content: {
+                    type: "text",
+                    text: `Please review this code:\n\n${code}`
+                }
+            }]
+        })
+     */
+    registerPrompt(
+        name: string,
+        config: {
+            title?: string;
+            description?: string;
+            argsSchema?: any;
+        },
+        callback: any
+    ): boolean {
+        let result: boolean = false;
+        try {
+            this.mcp.registerPrompt(
+                name,
+                {
+                    title: config.title,
+                    description: config.description,
+                    argsSchema: config.argsSchema
+                },
+                callback
+            );
+            result = true;
+        } catch (e) {
+            throw e;
+        }
+        return result;
+    }
+
+    /**
+     * stop receiving messages.
+     */
+    async stopServer(): Promise<void> {
+        // if open.
+        if (this.open) {
+            // close the mcp connection.
+            await this.mcp.close();
+            this.open = false;
+        }
+    }
+
+    /**
+     * start receiving messages on stdin and sending messages on stdout.
+     * For command-line tools and direct integrations.
+     */
+    async startServerStdio(): Promise<void> {
+
+        // if not open.
+        if (!this.open) {
+            try {
+                // ... set up server resources, tools, and prompts ...
+                // before starting server.
+                const transport = new StdioServerTransport();
+                await this.mcp.connect(transport);
+                
+                // connection open.
+                this.open = true;
+
+            } catch (e) {
+                this.open = false;
+                throw e;
+            }
+        }
+    }
+
+    /**
+     * start receiving messages on streamable HTTP.
+     * For remote servers, set up a Streamable HTTP transport that handles 
+     * both client requests and server-to-client notifications.
+     */
+    async startServerHttp(): Promise<void> {
+
+        // if not open.
+        if (!this.open) {
+            try {
+                let self = this;
+
+                // ... set up server resources, tools, and prompts ...
+                // before starting server.
+
+                // init new transport.
+                const transport = new StreamableHTTPServerTransport({
+                    sessionIdGenerator: () => randomUUID(),
+                    onsessioninitialized: (sessionId) => {
+                        // Store the transport by session ID
+                        self.httpTransports.push({
+                            sessionId: sessionId,
+                            transport: transport
+                        });
+                    }
+                });
+
+                // Clean up transport when closed
+                transport.onclose = () => {
+                    if (transport.sessionId) {
+                        try {
+                            let httpTransportModel: McpHttpTransportModel = self.findHttpTransport(transport.sessionId);
+                            if (httpTransportModel) {
+
+                                // Get the index of the current transport.
+                                let peerIndex = self.httpTransports.indexOf(httpTransportModel);
+                                if (peerIndex > -1) {
+                                    self.httpTransports.splice(peerIndex, 1);
+                                }
+                            }
+                        }
+                        catch (e) { }
+                    }
+                };
+
+                // Connect to the MCP server
+                await this.mcp.connect(transport);
+
+                // connection open.
+                this.open = true;
+
+            } catch (e) {
+                this.open = false;
+                throw e;
+            }
+        }
+    }
+}
