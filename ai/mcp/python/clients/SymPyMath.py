@@ -2,10 +2,10 @@ from typing import Optional, Any, List, Union
 
 from ..McpClient import McpClient
 
-# MathJs Math Expression Evaluator.
-class MathJsMath(McpClient):
+# SymPy Math Expression Evaluator.
+class SymPyMath(McpClient):
     """
-    MathJs Math Expression Evaluator.
+    SymPy Math Expression Evaluator.
     """
     def __init__(self):
         super().__init__()
