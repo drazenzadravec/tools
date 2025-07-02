@@ -119,12 +119,17 @@ class McpClient:
         if self.open:
             self.session = None
             self.httpSession = None
-            await self.exit_stack.aclose()
             self.open = False
 
             self.tools = [];
             self.prompts = [];
             self.resources = [];
+
+            try:
+                # close the stack.
+                await self.exit_stack.aclose()
+            except Exception as e:
+                valid: bool = False
 
     async def openConnectionStdio(self, serverScriptPath: str):
         """
