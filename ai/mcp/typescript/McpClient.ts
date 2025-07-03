@@ -30,12 +30,21 @@ export class McpClient {
 
     /**
      * Model context protocol client.
+     * @param {string} name     client name.
+     * @param {string} version  client version.
+     * @example
+     *      name: "client-mcp",
+            version: "1.0.0",
+     * 
      */
-    constructor() {
+    constructor(public name: string, public version: string) {
 
         // create the client.
         this.open = false;
-        this.mcp = new Client({ name: "nequeo-mcp-client", version: "1.0.1" });
+        this.mcp = new Client({
+            name: name,
+            version: version
+        });
 
         // init
         this.tools = [];
@@ -197,51 +206,64 @@ export class McpClient {
 
                 // open a connection to the MCP server.
                 await this.mcp.connect(this.transport);
+                let list_error: boolean = false;
 
-                // load all tools.
-                const toolsResult = await this.mcp.listTools();
-                if (toolsResult !== null) {
-                    if (toolsResult.tools.length > 0) {
-                        this.tools = toolsResult.tools.map((tool) => {
-                            return {
-                                name: tool.name,
-                                title: tool.title,
-                                description: tool.description,
-                                inputSchema: tool.inputSchema,
-                            };
-                        });
+                try {
+                    // load all tools.
+                    const toolsResult = await this.mcp.listTools();
+                    if (toolsResult !== null) {
+                        if (toolsResult.tools.length > 0) {
+                            this.tools = toolsResult.tools.map((tool) => {
+                                return {
+                                    name: tool.name,
+                                    title: tool.title,
+                                    description: tool.description,
+                                    inputSchema: tool.inputSchema,
+                                };
+                            });
+                        }
                     }
+                } catch (etools) {
+                    list_error = true;
                 }
                 
-                // load all prompts.
-                const promptsResult = await this.mcp.listPrompts();
-                if (promptsResult !== null) {
-                    if (promptsResult.prompts.length > 0) {
-                        this.prompts = promptsResult.prompts.map((prompt) => {
-                            return {
-                                name: prompt.name,
-                                title: prompt.title,
-                                description: prompt.description,
-                                arguments: prompt.arguments
-                            };
-                        });
+                try {
+                    // load all prompts.
+                    const promptsResult = await this.mcp.listPrompts();
+                    if (promptsResult !== null) {
+                        if (promptsResult.prompts.length > 0) {
+                            this.prompts = promptsResult.prompts.map((prompt) => {
+                                return {
+                                    name: prompt.name,
+                                    title: prompt.title,
+                                    description: prompt.description,
+                                    arguments: prompt.arguments
+                                };
+                            });
+                        }
                     }
+                } catch (eprompts) {
+                    list_error = true;
                 }
 
-                // load all resources.
-                const resourcesResult = await this.mcp.listResources();
-                if (resourcesResult !== null) {
-                    if (resourcesResult.resources.length > 0) {
-                        this.resources = resourcesResult.resources.map((resource) => {
-                            return {
-                                name: resource.name,
-                                title: resource.title,
-                                description: resource.description,
-                                uri: resource.uri,
-                                mimeType: resource.mimeType
-                            };
-                        });
+                try {
+                    // load all resources.
+                    const resourcesResult = await this.mcp.listResources();
+                    if (resourcesResult !== null) {
+                        if (resourcesResult.resources.length > 0) {
+                            this.resources = resourcesResult.resources.map((resource) => {
+                                return {
+                                    name: resource.name,
+                                    title: resource.title,
+                                    description: resource.description,
+                                    uri: resource.uri,
+                                    mimeType: resource.mimeType
+                                };
+                            });
+                        }
                     }
+                } catch (eresources) {
+                    list_error = true;
                 }
 
                 // connection open.
@@ -276,51 +298,64 @@ export class McpClient {
 
                 // open a connection to the MCP server.
                 await this.mcp.connect(this.httpTransport);
+                let list_error: boolean = false;
 
-                // load all tools.
-                const toolsResult = await this.mcp.listTools();
-                if (toolsResult !== null) {
-                    if (toolsResult.tools.length > 0) {
-                        this.tools = toolsResult.tools.map((tool) => {
-                            return {
-                                name: tool.name,
-                                title: tool.title,
-                                description: tool.description,
-                                inputSchema: tool.inputSchema,
-                            };
-                        });
+                try {
+                    // load all tools.
+                    const toolsResult = await this.mcp.listTools();
+                    if (toolsResult !== null) {
+                        if (toolsResult.tools.length > 0) {
+                            this.tools = toolsResult.tools.map((tool) => {
+                                return {
+                                    name: tool.name,
+                                    title: tool.title,
+                                    description: tool.description,
+                                    inputSchema: tool.inputSchema,
+                                };
+                            });
+                        }
                     }
+                } catch (etools) {
+                    list_error = true;
                 }
 
-                // load all prompts.
-                const promptsResult = await this.mcp.listPrompts();
-                if (promptsResult !== null) {
-                    if (promptsResult.prompts.length > 0) {
-                        this.prompts = promptsResult.prompts.map((prompt) => {
-                            return {
-                                name: prompt.name,
-                                title: prompt.title,
-                                description: prompt.description,
-                                arguments: prompt.arguments
-                            };
-                        });
+                try {
+                    // load all prompts.
+                    const promptsResult = await this.mcp.listPrompts();
+                    if (promptsResult !== null) {
+                        if (promptsResult.prompts.length > 0) {
+                            this.prompts = promptsResult.prompts.map((prompt) => {
+                                return {
+                                    name: prompt.name,
+                                    title: prompt.title,
+                                    description: prompt.description,
+                                    arguments: prompt.arguments
+                                };
+                            });
+                        }
                     }
+                } catch (eprompts) {
+                    list_error = true;
                 }
 
-                // load all resources.
-                const resourcesResult = await this.mcp.listResources();
-                if (resourcesResult !== null) {
-                    if (resourcesResult.resources.length > 0) {
-                        this.resources = resourcesResult.resources.map((resource) => {
-                            return {
-                                name: resource.name,
-                                title: resource.title,
-                                description: resource.description,
-                                uri: resource.uri,
-                                mimeType: resource.mimeType
-                            };
-                        });
+                try {
+                    // load all resources.
+                    const resourcesResult = await this.mcp.listResources();
+                    if (resourcesResult !== null) {
+                        if (resourcesResult.resources.length > 0) {
+                            this.resources = resourcesResult.resources.map((resource) => {
+                                return {
+                                    name: resource.name,
+                                    title: resource.title,
+                                    description: resource.description,
+                                    uri: resource.uri,
+                                    mimeType: resource.mimeType
+                                };
+                            });
+                        }
                     }
+                } catch (eresources) {
+                    list_error = true;
                 }
 
                 // connection open.
