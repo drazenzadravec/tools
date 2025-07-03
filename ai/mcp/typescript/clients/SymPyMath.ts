@@ -1,15 +1,15 @@
 import { McpClient } from '../McpClient.js';
 
 /**
- * MathJs Math Expression Evaluator.
+ * SymPy Math Expression Evaluator.
  */
-export class MathJsMathClient extends McpClient {
+export class SymPyMath extends McpClient {
 
     /**
-     * MathJs Math Expression Evaluator.
+     * SymPy Math Expression Evaluator.
      */
     constructor() {
-        super("MathJsMathExpressionEvaluator", "1.0.1");
+        super("SymPyMathExpressionEvaluator", "1.0.1");
     }
 
     /**
