@@ -40,7 +40,7 @@ const response = await openai.responses.create({
             role: "user",
             content: `evaluate the math expression: ${mathExpression}`
         }],
-    /*tools: tools*/
+    tools: tools
 });
 
 //console.log(response);
