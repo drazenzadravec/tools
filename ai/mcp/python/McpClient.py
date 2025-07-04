@@ -17,7 +17,6 @@ class McpClient:
 
         # Initialize session and client objects
         self.session: Optional[ClientSession] = None
-        self.httpSession: ClientSession = None
         self.exit_stack = AsyncExitStack()
 
         # init
@@ -118,7 +117,6 @@ class McpClient:
         # if open.
         if self.open:
             self.session = None
-            self.httpSession = None
             self.open = False
 
             self.tools = [];
@@ -239,73 +237,66 @@ class McpClient:
         # if not open.
         if not self.open:
             try:
-                # Connect to a streamable HTTP server
-                async with streamablehttp_client(serverUrl) as (
-                    read_stream,
-                    write_stream,
-                    _,
-                ):
-                    # Create a session using the client streams
-                    async with ClientSession(read_stream, write_stream) as session:
+                # open a connection to the MCP server.
+                http_transport = await self.exit_stack.enter_async_context(streamablehttp_client(serverUrl))
+                self.read, self.write, _, = http_transport
+                self.session = await self.exit_stack.enter_async_context(ClientSession(self.read, self.write))
 
-                        # assign the client session.
-                        self.httpSession = session
-
-                        # Initialize the connection
-                        await self.httpSession.initialize()
-                        list_error: bool = False
+                # Initialize the connection
+                await self.session.initialize()
+                list_error: bool = False
                 
-                        try:
-                            # load all tools.
-                            toolsResult = await self.httpSession.list_tools()
-                            if toolsResult is not None:
-                                if toolsResult.tools is not None:
-                                    for tool in toolsResult.tools:
-                                        # create the tool model.
-                                        self.tools.append(McpTool(
-                                            tool.name,
-                                            tool.name,
-                                            tool.description,
-                                            tool.inputSchema
-                                        ))
-                        except Exception as etools:
-                            list_error: bool = True
+                try:
+                    # load all tools.
+                    toolsResult = await self.session.list_tools()
+                    if toolsResult is not None:
+                        if toolsResult.tools is not None:
+                            for tool in toolsResult.tools:
+                                # create the tool model.
+                                self.tools.append(McpTool(
+                                    tool.name,
+                                    tool.name,
+                                    tool.description,
+                                    tool.inputSchema
+                                ))
+                except Exception as etools:
+                    list_error: bool = True
 
-                        try:
-                            # load all prompts.
-                            promptsResult = await self.httpSession.list_prompts()
-                            if promptsResult is not None:
-                                if promptsResult.prompts is not None:
-                                    for prompt in promptsResult.prompts:
-                                        # create the prompt model.
-                                        self.prompts.append(McpPrompt(
-                                            prompt.name,
-                                            prompt.name,
-                                            prompt.description,
-                                            prompt.arguments
-                                        ))
-                        except Exception as eprompts:
-                            list_error: bool = True
+                try:
+                    # load all prompts.
+                    promptsResult = await self.session.list_prompts()
+                    if promptsResult is not None:
+                        if promptsResult.prompts is not None:
+                            for prompt in promptsResult.prompts:
+                                # create the prompt model.
+                                self.prompts.append(McpPrompt(
+                                    prompt.name,
+                                    prompt.name,
+                                    prompt.description,
+                                    prompt.arguments
+                                ))
+                except Exception as eprompts:
+                    list_error: bool = True
 
-                        try:
-                            # load all resources.
-                            resourcesResult = await self.httpSession.list_resources()
-                            if resourcesResult is not None:
-                                if resourcesResult.resources is not None:
-                                    for resource in resourcesResult.resources:
-                                        # create the resource model.
-                                        self.resources.append(McpResource(
-                                            resource.name,
-                                            resource.name,
-                                            resource.description,
-                                            resource.uri,
-                                            resource.mimeType
-                                        ))
-                        except Exception as eresources:
-                            list_error: bool = True
+                try:
+                    # load all resources.
+                    resourcesResult = await self.session.list_resources()
+                    if resourcesResult is not None:
+                        if resourcesResult.resources is not None:
+                            for resource in resourcesResult.resources:
+                                # create the resource model.
+                                self.resources.append(McpResource(
+                                    resource.name,
+                                    resource.name,
+                                    resource.description,
+                                    resource.uri,
+                                    resource.mimeType
+                                ))
+                except Exception as eresources:
+                    list_error: bool = True
 
-                        # client connected.
-                        self.open = True
+                # client connected.
+                self.open = True
 
             except Exception as e:
                 self.open = False

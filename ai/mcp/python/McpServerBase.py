@@ -62,13 +62,15 @@ class McpServerBase:
                  name: str,
                  version: str,
                  instructions: str,
-                 capabilities: Any):
+                 capabilities: Any,
+                 stateless: bool = True):
         """
         Args:
             name:    server name
             version:    server version
             instructions:    server instructions
             capabilities:    server capabilities
+            stateless:       is http stateless: true: else false (default is true).
 
         Example:
             name: "weather",
@@ -85,9 +87,10 @@ class McpServerBase:
         self.version = version
         self.instructions = instructions
         self.capabilities = capabilities
+        self.stateless = stateless
 
         # Create an MCP server
-        self.mcp: FastMCP = FastMCP(name, instructions=instructions, stateless_http=True)
+        self.mcp: FastMCP = FastMCP(name, instructions=instructions, stateless_http=stateless, json_response=True)
 
     def hasStarted(self) -> bool:
         """
