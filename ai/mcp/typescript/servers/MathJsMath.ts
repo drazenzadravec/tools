@@ -62,21 +62,37 @@ export class MathJsMath extends McpServerBase {
 
 /**
  * start the MathJs math server.
+ * @param {boolean} useStreamableHttp   use streamable HTTP to receiving messages.
+ * @param {boolean} stateless  set the http transport stateless value; true if stateless; else has state.
+ * @returns {MathJsMath}    MathJsMath server; else null.
  */
-export async function mainMathJsMathServer(): Promise<void> {
+export async function mainMathJsMathServer(useStreamableHttp: boolean = false, stateless: boolean = true): Promise<MathJsMath | undefined> {
 
     // start server.
     let mathjsmath_server: MathJsMath = new MathJsMath();
+    let registeredAll: boolean = true;
 
+    // set state
+    mathjsmath_server.setHttpTransportStateless(stateless);
+
+    // ternary conditional statement.
     // register tools.
-    let tool_MathExpressionEvaluator: boolean = mathjsmath_server.registerTool_MathExpressionEvaluator();
+    registeredAll = mathjsmath_server.registerTool_MathExpressionEvaluator() && registeredAll ? true : false;
 
     // if registered
-    if (tool_MathExpressionEvaluator) {
+    if (registeredAll) {
         // start server.
-        await mathjsmath_server.startServerStdio();
+        if (useStreamableHttp) {
+            await mathjsmath_server.startServerHttp();
+        }
+        else {
+            await mathjsmath_server.startServerStdio();
+        }
+
+        // return the server.
+        return mathjsmath_server;
     }
     else {
-        console.log("Error: failed to start server");
+        return null;
     }
 }
