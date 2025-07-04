@@ -1,6 +1,5 @@
 import {
-    McpServer,
-    ResourceTemplate
+    McpServer
 } from "@modelcontextprotocol/sdk/server/mcp.js";
 import {
     StdioServerTransport
@@ -57,6 +56,7 @@ export class McpServerBase {
     // global.
     private open: boolean;
     private mcp: McpServer;
+    private httpTransportStateless: boolean;
     private httpTransports: Array<McpHttpTransportModel>;
 
     /**
@@ -83,6 +83,7 @@ export class McpServerBase {
     ) {
         // create the server.
         this.open = false;
+        this.httpTransportStateless = true;
         this.httpTransports = [];
         this.mcp = new McpServer(
             {
@@ -93,6 +94,14 @@ export class McpServerBase {
                 instructions: instructions,
                 capabilities: capabilities
             });
+    }
+
+    /**
+     * set http transport stateless value: defualt is true (no state).
+     * @param {boolean} stateless  set the http transport stateless value; true if stateless; else has state.
+     */
+    setHttpTransportStateless(stateless: boolean): void {
+        this.httpTransportStateless = stateless;
     }
 
     /**
@@ -204,7 +213,7 @@ export class McpServerBase {
      */
     registerResource(
         name: string,
-        uriOrTemplate: string | ResourceTemplate,
+        uriOrTemplate: string,
         config: {
             title?: string;
             description?: string;
@@ -288,6 +297,20 @@ export class McpServerBase {
     async stopServer(): Promise<void> {
         // if open.
         if (this.open) {
+
+            // close all transports
+            for (var i = 0; i < this.httpTransports.length; i++) {
+                try {
+                    // close the transport.
+                    this.httpTransports[i].transport.close();
+                } catch (e) {
+                    var error = e;
+                }
+            }
+
+            // empty list.
+            this.httpTransports = [];
+
             // close the mcp connection.
             await this.mcp.close();
             this.open = false;
@@ -333,39 +356,59 @@ export class McpServerBase {
                 // ... set up server resources, tools, and prompts ...
                 // before starting server.
 
-                // init new transport.
-                const transport = new StreamableHTTPServerTransport({
-                    sessionIdGenerator: () => randomUUID(),
-                    onsessioninitialized: (sessionId) => {
-                        // Store the transport by session ID
-                        self.httpTransports.push({
-                            sessionId: sessionId,
-                            transport: transport
-                        });
-                    }
-                });
+                // if no state
+                if (!this.httpTransportStateless) {
 
-                // Clean up transport when closed
-                transport.onclose = () => {
-                    if (transport.sessionId) {
-                        try {
-                            let httpTransportModel: McpHttpTransportModel = self.findHttpTransport(transport.sessionId);
-                            if (httpTransportModel) {
+                    // init new transport.
+                    const transport: StreamableHTTPServerTransport = new StreamableHTTPServerTransport({
+                        sessionIdGenerator: () => randomUUID(),
+                        onsessioninitialized: (sessionId) => {
+                            // Store the transport by session ID
+                            self.httpTransports.push({
+                                sessionId: sessionId,
+                                transport: transport
+                            });
+                        }
+                    });
 
-                                // Get the index of the current transport.
-                                let peerIndex = self.httpTransports.indexOf(httpTransportModel);
-                                if (peerIndex > -1) {
-                                    self.httpTransports.splice(peerIndex, 1);
+                    // Clean up transport when closed
+                    transport.onclose = () => {
+                        if (transport.sessionId) {
+                            try {
+                                let httpTransportModel: McpHttpTransportModel = self.findHttpTransport(transport.sessionId);
+                                if (httpTransportModel) {
+
+                                    // Get the index of the current transport.
+                                    let peerIndex = self.httpTransports.indexOf(httpTransportModel);
+                                    if (peerIndex > -1) {
+                                        self.httpTransports.splice(peerIndex, 1);
+                                    }
                                 }
                             }
+                            catch (e) { }
                         }
-                        catch (e) { }
-                    }
-                };
+                    };
 
-                // Connect to the MCP server
-                await this.mcp.connect(transport);
+                    // Connect to the MCP server
+                    await this.mcp.connect(transport);
+                }
+                else {
+                    // stateless
+                    // init new transport.
+                    const transport: StreamableHTTPServerTransport = new StreamableHTTPServerTransport({
+                        sessionIdGenerator: undefined
+                    });
 
+                    // add this transport.
+                    this.httpTransports.push({
+                        sessionId: "sessionid",
+                        transport: transport
+                    });
+
+                    // Connect to the MCP server
+                    await this.mcp.connect(transport);
+                }
+                
                 // connection open.
                 this.open = true;
 
