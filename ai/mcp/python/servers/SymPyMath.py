@@ -49,20 +49,30 @@ class SymPyMath(McpServerBase):
         return result
 
 # if main.
-def mainSymPyMathServer():
+def mainSymPyMathServer(useStreamableHttp: bool = False) -> SymPyMath | None:
     """
     start the SymPy math server.
+
+    Args:
+            useStreamableHttp:    use streamable HTTP to receiving messages.
     """
     # start server.
     sympymath_server = SymPyMath()
+    registeredAll: bool = True
 
+    # ternary conditional statement.
     # register tools.
-    tool_MathExpressionEvaluator: bool = sympymath_server.registerTool_MathExpressionEvaluator()
+    registeredAll = True if (sympymath_server.registerTool_MathExpressionEvaluator() and registeredAll) else False
 
     # if registered
-    if (tool_MathExpressionEvaluator):
-
+    if (registeredAll):
         # start server.
-        sympymath_server.startServerStdio()
+        if (useStreamableHttp):
+            sympymath_server.startServerHttp()
+        else:
+            sympymath_server.startServerStdio()
+
+        # return the server.
+        return sympymath_server
     else:
-        print("Error: failed to start server")
+        return None
