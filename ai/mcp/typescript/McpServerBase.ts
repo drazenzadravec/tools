@@ -72,13 +72,15 @@ export class McpServerBase {
             capabilities: {
                 resources: {},
                 tools: {},
+                prompts: {}
             }
      * 
      */
     constructor(public name: string, public version: string, instructions: string,
         public capabilities: {
             resources: {},
-            tools: {}
+            tools: {},
+            prompts: {}
         }
     ) {
         // create the server.

@@ -12,7 +12,8 @@ export class MathJsMath extends McpServerBase {
      * MathJs Math Expression Evaluator.
      */
     constructor() {
-        super("MathJsMathExpression", "1.0.1", "MathJs math expression evaluator", { resources: {}, tools: {} });
+        super("MathJsMathExpression", "1.0.1", "MathJs math expression evaluator",
+            { resources: {}, tools: {}, prompts: {} });
     }
 
     /**
@@ -25,7 +26,7 @@ export class MathJsMath extends McpServerBase {
         return this.registerTool(
             "MathExpressionEvaluator",
             {
-                description: "Use MathJS to execute mathematical expressions",
+                description: "Use MathJS to execute the mathematical expressions",
                 inputSchema: {
                     expression: z.string()
                 }
@@ -34,6 +35,58 @@ export class MathJsMath extends McpServerBase {
                 content: [{
                     type: "text",
                     text: localThis.mathExpressionEvaluator(expression)
+                }]
+            })
+        );
+    }
+
+    /**
+     * register prompt math expression evaluator.
+     * @returns {boolean} true if register; else false.
+     */
+    registerPrompt_MathExpressionEvaluator(): boolean {
+
+        return this.registerPrompt(
+            "MathExpressionEvaluator",
+            {
+                description: "Use MathJS to execute the mathematical expressions",
+                argsSchema: {
+                    expression: z.string()
+                }
+            },
+            async ({ expression }) => ({
+                messages: [{
+                    role: "user",
+                    content: {
+                        type: "text",
+                        text: `evaluate the math expression: ${expression}`
+                    }
+                }]
+            })
+        );
+    }
+
+    /**
+     * register prompt math expression result.
+     * @returns {boolean} true if register; else false.
+     */
+    registerPrompt_MathExpressionResult(): boolean {
+
+        return this.registerPrompt(
+            "MathExpressionResult",
+            {
+                description: "Describe the expression result.",
+                argsSchema: {
+                    result: z.string()
+                }
+            },
+            async ({ result }) => ({
+                messages: [{
+                    role: "user",
+                    content: {
+                        type: "text",
+                        text: `describe the result: ${result}, using latex`
+                    }
                 }]
             })
         );
@@ -78,6 +131,8 @@ export async function mainMathJsMathServer(useStreamableHttp: boolean = false, s
     // ternary conditional statement.
     // register tools.
     registeredAll = mathjsmath_server.registerTool_MathExpressionEvaluator() && registeredAll ? true : false;
+    registeredAll = mathjsmath_server.registerPrompt_MathExpressionEvaluator() && registeredAll ? true : false;
+    registeredAll = mathjsmath_server.registerPrompt_MathExpressionResult() && registeredAll ? true : false;
 
     // if registered
     if (registeredAll) {
