@@ -4,7 +4,7 @@ from typing import Optional, Any, List, Union
 
 from mcp.server.fastmcp import FastMCP
 from mcp.server.fastmcp.resources.base import Resource
-from mcp.server.fastmcp.prompts.base import Prompt
+from mcp.server.fastmcp.prompts.base import Prompt, PromptArgument
 
 # Model context protocol tool.
 class McpTool:
@@ -79,6 +79,7 @@ class McpServerBase:
             capabilities: {
                 resources: {},
                 tools: {},
+                prompts: {}
             }
         """
         self.open = False
@@ -196,7 +197,7 @@ class McpServerBase:
                      name: str, 
                      callback: Any,
                      description: str | None = None,
-                     argsSchema: Any | None = None) -> bool:
+                     argsSchema: List[PromptArgument] | None = None) -> bool:
         """
         registers a prompt with a config object and callback.
 
@@ -216,20 +217,26 @@ class McpServerBase:
                     role: "user",
                     content: {
                         type: "text",
-                        text: `Please review this code:${code}`
+                        text: f"code: {code}"
                     }
                 }]
             }),
             "Review code for best practices and potential issues",
-            { code: z.string() }
+            [
+                {
+                    name: string;
+                    description?: string;
+                    required?: boolean; 
+                }
+            ]
         """
         result: bool = False
         try:
             self.mcp.add_prompt(Prompt(
-                callback,
-                name,
-                description,
-                argsSchema
+                name = name,
+                description = description,
+                arguments = argsSchema,
+                fn = callback
             ))
             result = True
         except Exception as e:

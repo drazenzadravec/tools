@@ -2,6 +2,7 @@ from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
 from mcp.client.streamable_http import streamablehttp_client
 
+from pydantic import AnyUrl, TypeAdapter
 from typing import Optional, Any, List, Union
 from contextlib import AsyncExitStack
 
@@ -77,7 +78,7 @@ class McpClient:
         else:
             return None
 
-    async def callPrompt(self, name: str, args: Any) -> Union[Any, None]:
+    async def callPrompt(self, name: str, args: dict[str, str] | None = None) -> Union[Any, None]:
         """
         read the resource.
 
@@ -94,7 +95,7 @@ class McpClient:
         else:
             return None
 
-    async def callResource(self, uri: str) -> Union[Any, None]:
+    async def callResource(self, uri: AnyUrl) -> Union[Any, None]:
         """
         read the resource.
 

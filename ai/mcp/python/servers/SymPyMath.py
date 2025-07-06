@@ -1,6 +1,11 @@
 from sympy import *
 from sympy import sympify
 
+from typing import Optional, Any, List, Union
+
+from mcp.server.fastmcp import FastMCP
+from mcp.server.fastmcp.prompts.base import PromptArgument, Message, TextContent
+
 from ..McpServerBase import McpServerBase
 
 # SymPy Math Expression Evaluator.
@@ -9,7 +14,8 @@ class SymPyMath(McpServerBase):
     SymPy math expression evaluator.
     """
     def __init__(self):
-        super().__init__("SymPyMathExpression", "1.0.1", "SymPy math expression evaluator", dict( resources={}, tools={}))
+        super().__init__("SymPyMathExpression", "1.0.1", "SymPy math expression evaluator", 
+                         dict( resources={}, tools={}, prompts={}))
 
     def registerTool_MathExpressionEvaluator(self) -> bool:
         """
@@ -21,7 +27,73 @@ class SymPyMath(McpServerBase):
         return self.registerTool(
             "MathExpressionEvaluator", 
             self.mathExpressionEvaluator,
-            "Use SymPy to execute mathematical expressions")
+            "Use SymPy to execute the mathematical expressions")
+
+    def registerPrompt_MathExpressionEvaluator(self) -> bool:
+        """
+        register prompt math expression evaluator.
+
+        Return:
+            true if prompt registered; else false.
+        """
+        return self.registerPrompt(
+            "MathExpressionEvaluator",
+            self.mathExpressionEvaluatorPrompt,
+            "Use SymPy to execute the mathematical expressions",
+            [ PromptArgument(name = "expression", description = "the math expression", required = True) ]
+        )
+
+    def registerPrompt_MathExpressionResult(self) -> bool:
+        """
+        register prompt math expression result.
+
+        Return:
+            true if prompt registered; else false.
+        """
+        return self.registerPrompt(
+            "MathExpressionResult",
+            self.mathExpressionResultPrompt,
+            "Describe the expression result",
+            [ PromptArgument(name = "result", description = "the math evaluated result", required = True) ]
+        )
+
+    def mathExpressionEvaluatorPrompt(self, expression: str) -> List[Message]:
+        """
+        prompt math expression evaluator.
+
+        Args:
+            expression:    expression to evaluate.
+
+        Return:
+            the prompt result.
+        """
+        return [ 
+            Message(
+                role = "user", 
+                content = TextContent(
+                    type = "text", 
+                    text = f"evaluate the math expression: {expression}")
+            )
+        ]
+
+    def mathExpressionResultPrompt(self, result: str) -> List[Message]:
+        """
+        prompt math expression result.
+
+        Args:
+            result:    expression to evaluate.
+
+        Return:
+            the prompt result.
+        """
+        return [ 
+            Message(
+                role = "user", 
+                content = TextContent(
+                    type = "text", 
+                    text = f"describe the result: {result}, using latex")
+            )
+        ]
 
     def mathExpressionEvaluator(self, expression: str) -> str:
         """
@@ -63,6 +135,8 @@ def mainSymPyMathServer(useStreamableHttp: bool = False) -> SymPyMath | None:
     # ternary conditional statement.
     # register tools.
     registeredAll = True if (sympymath_server.registerTool_MathExpressionEvaluator() and registeredAll) else False
+    registeredAll = True if (sympymath_server.registerPrompt_MathExpressionEvaluator() and registeredAll) else False
+    registeredAll = True if (sympymath_server.registerPrompt_MathExpressionResult() and registeredAll) else False
 
     # if registered
     if (registeredAll):

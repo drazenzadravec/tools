@@ -20,7 +20,37 @@ class SymPyMath(McpClient):
         Return:
             the evaluated expression.
         """
-        result: Any = await self.callTool("MathExpressionEvaluator", args={"expression": expression})
+        res: Any = await self.callTool("MathExpressionEvaluator", args={"expression": expression})
 
         # return the result.
-        return result;
+        return res;
+
+    async def callMathExpressionEvaluatorPrompt(self, expression: str) -> Union[Any, None]:
+        """
+        call the math expression evaluator prompt.
+
+        Args:
+            expression: the math expression.
+
+        Return:
+            the evaluated expression.
+        """
+        res: Any = await self.callPrompt("MathExpressionEvaluator", args={"expression": expression})
+
+        # return the result.
+        return res;
+
+    async def callMathExpressionResultPrompt(self, result: str) -> Union[Any, None]:
+        """
+        call the math expression result prompt.
+
+        Args:
+            result: the math result.
+
+        Return:
+            the evaluated result.
+        """
+        res: Any = await self.callPrompt("MathExpressionResult", args={"result": result})
+
+        # return the result.
+        return res;
