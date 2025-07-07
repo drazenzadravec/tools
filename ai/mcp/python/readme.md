@@ -4,14 +4,14 @@
 import asyncio
 import sys
 
-from .mcp.clients.SymPyMath import SymPyMath
+from .clients.SymPyMath import SymPyMath
 
 async def main():
 
     try:
         # connect to the server from the client.
         sympymathClient = SymPyMath()
-        await sympymathClient.openConnectionStdio("D:/Development/Version2022/CrossPlatform/python/internalroot/publish_ai_mcp/AiMcp.py")
+        await sympymathClient.openConnectionStdio("../servers/SymPyMath.py")
 
         # call the tool
         result = await sympymathClient.callMathExpressionEvaluatorTool("integrate(x**2, x)")
