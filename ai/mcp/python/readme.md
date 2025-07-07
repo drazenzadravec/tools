@@ -11,7 +11,7 @@ async def main():
     try:
         # connect to the server from the client.
         sympymathClient = SymPyMath()
-        await sympymathClient.openConnectionStdio("../servers/SymPyMath.py")
+        await sympymathClient.openConnectionStdio("./servers/SymPyMath.py")
 
         # call the tool
         result = await sympymathClient.callMathExpressionEvaluatorTool("integrate(x**2, x)")
