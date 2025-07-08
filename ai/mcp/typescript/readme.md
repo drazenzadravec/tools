@@ -17,7 +17,7 @@ await mathjsmathClient.closeConnection();
 console.log(result.content[0].text);
 console.log(resultPrompt.messages);
 console.log(resultPrompt1.messages);
-
+```
 
 ```typescript
 import { MathJsMathClient } from './clients/MathJsMath.js';
@@ -44,3 +44,4 @@ console.log(result.content[0].text);
 console.log(result3.content[0].text);
 console.log(resultPrompt.messages);
 console.log(resultPrompt1.messages);
+```
