@@ -1,5 +1,13 @@
 import {
-    McpServer
+    McpServer,
+    RegisteredTool,
+    RegisteredPrompt,
+    RegisteredResource,
+    RegisteredResourceTemplate,
+    ToolCallback,
+    PromptCallback,
+    ReadResourceCallback,
+    ReadResourceTemplateCallback
 } from "@modelcontextprotocol/sdk/server/mcp.js";
 import {
     StdioServerTransport
@@ -7,7 +15,12 @@ import {
 import {
     StreamableHTTPServerTransport
 } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
+
 import { randomUUID } from "node:crypto";
+import {
+    z,
+    ZodRawShape,
+} from 'zod';
 
 /**
  * Model context protocol tool.
@@ -17,6 +30,14 @@ export interface McpTool {
     "title"?: string;
     "description"?: string;
     "inputSchema"?: any;
+}
+
+/**
+ * Model context protocol tool callback.
+ */
+export interface McpToolCallback {
+    "name"?: string;
+    "callback"?: ToolCallback<undefined | ZodRawShape>;
 }
 
 /**
@@ -30,6 +51,14 @@ export interface McpPrompt {
 }
 
 /**
+ * Model context protocol prompt callback.
+ */
+export interface McpPromptCallback {
+    "name"?: string;
+    "callback"?: PromptCallback<undefined | any /*PromptArgsRawShape*/>;
+}
+
+/**
  * Model context protocol resource.
  */
 export interface McpResource {
@@ -38,6 +67,14 @@ export interface McpResource {
     "description"?: string;
     "uri"?: string;
     "mimeType"?: string;
+}
+
+/**
+ * Model context protocol resource callback.
+ */
+export interface McpResourceCallback {
+    "name"?: string;
+    "callback"?: ReadResourceCallback | ReadResourceTemplateCallback;
 }
 
 /**
@@ -58,6 +95,12 @@ export class McpServerBase {
     private mcp: McpServer;
     private httpTransportStateless: boolean;
     private httpTransports: Array<McpHttpTransportModel>;
+    private tools: Array<McpTool>;
+    private prompts: Array<McpPrompt>;
+    private resources: Array<McpResource>;
+    private toolsCallback: Array<McpToolCallback>;
+    private promptsCallback: Array<McpPromptCallback>;
+    private resourcesCallback: Array<McpResourceCallback>;
 
     /**
      * Model context protocol server base.
@@ -96,6 +139,14 @@ export class McpServerBase {
                 instructions: instructions,
                 capabilities: capabilities
             });
+
+        // init
+        this.tools = [];
+        this.prompts = [];
+        this.resources = [];
+        this.toolsCallback = [];
+        this.promptsCallback = [];
+        this.resourcesCallback = [];
     }
 
     /**
@@ -172,7 +223,7 @@ export class McpServerBase {
     ): boolean {
         let result: boolean = false;
         try {
-            this.mcp.registerTool(
+            let registeredTool: RegisteredTool = this.mcp.registerTool(
                 name,
                 {
                     title: config.title,
@@ -183,6 +234,18 @@ export class McpServerBase {
                 },
                 callback
             );
+
+            // add the tool
+            this.tools.push({
+                name: name,
+                title: config.title,
+                description: config.description,
+                inputSchema: config.inputSchema
+            });
+            this.toolsCallback.push({
+                name: name,
+                callback: registeredTool.callback
+            });
             result = true;
         } catch (e) {
             throw e;
@@ -225,7 +288,7 @@ export class McpServerBase {
     ): boolean {
         let result: boolean = false;
         try {
-            this.mcp.registerResource(
+            let registeredResource: RegisteredResource | RegisteredResourceTemplate = this.mcp.registerResource(
                 name,
                 uriOrTemplate,
                 {
@@ -235,6 +298,19 @@ export class McpServerBase {
                 },
                 callback
             );
+
+            // add the resource
+            this.resources.push({
+                name: name,
+                title: config.title,
+                description: config.description,
+                uri: uriOrTemplate,
+                mimeType: config.mimeType
+            });
+            this.resourcesCallback.push({
+                name: name,
+                callback: registeredResource.readCallback
+            });
             result = true;
         } catch (e) {
             throw e;
@@ -277,7 +353,7 @@ export class McpServerBase {
     ): boolean {
         let result: boolean = false;
         try {
-            this.mcp.registerPrompt(
+            let registeredPrompt: RegisteredPrompt = this.mcp.registerPrompt(
                 name,
                 {
                     title: config.title,
@@ -286,11 +362,98 @@ export class McpServerBase {
                 },
                 callback
             );
+
+            // add the prompt
+            this.prompts.push({
+                name: name,
+                title: config.title,
+                description: config.description,
+                arguments: config.argsSchema
+            });
+            this.promptsCallback.push({
+                name: name,
+                callback: registeredPrompt.callback
+            });
             result = true;
         } catch (e) {
             throw e;
         }
         return result;
+    }
+
+    /**
+     * get the list of tools
+     * @returns {McpTool[]} the list of tools; else empty.
+     */
+    getTools(): Array<McpTool> {
+        return this.tools;
+    }
+
+    /**
+     * get the list of prompts
+     * @returns {McpPrompt[]} the list of prompts; else empty.
+     */
+    getPrompts(): Array<McpPrompt> {
+        return this.prompts;
+    }
+
+    /**
+     * get the list of resources
+     * @returns {McpResource[]} the list of resources; else empty.
+     */
+    getResources(): Array<McpResource> {
+        return this.resources;
+    }
+
+    /**
+     * call the tool.
+     * @param {string} name     the name of the tool
+     * @param {object} args     the arguments.
+     * @returns {object} the result; else null.
+     */
+    async callTool(name: string, args: any): Promise<any | null> {
+
+        // try find the tool.
+        let mcpToolCallback: McpToolCallback = this.toolsCallback.find(function (item) {
+            return (item.name === name || item.name === name);
+        })
+
+        // call the tool.
+        return await Promise.resolve(mcpToolCallback.callback(args, null));
+    }
+
+    /**
+     * get the prompt
+     * @param {string} name     the name of the prompt
+     * @param {object} args     the arguments.
+     * @returns {object} the result; else null.
+     */
+    async callPrompt(name: string, args: any): Promise<any | null> {
+
+        // try find the prompt.
+        let mcpPromptCallback: McpPromptCallback = this.promptsCallback.find(function (item) {
+            return (item.name === name || item.name === name);
+        })
+
+        // call the tool.
+        return await Promise.resolve(mcpPromptCallback.callback(args, null));
+    }
+
+    /**
+     * read the resource.
+     * @param {string} name     the name of the resource
+     * @param {string} uri  the resource URI.
+     * @returns {object} the result; else null.
+     */
+    async callResource(name: string, uri: string): Promise<any | null> {
+
+        // try find the resource.
+        let mcpResourceCallback: McpResourceCallback = this.resourcesCallback.find(function (item) {
+            return (item.name === name || item.name === name);
+        })
+
+        // call the tool.
+        return await Promise.resolve(mcpResourceCallback.callback(new URL(uri), null, null));
     }
 
     /**
@@ -312,6 +475,14 @@ export class McpServerBase {
 
             // empty list.
             this.httpTransports = [];
+
+            // init
+            this.tools = [];
+            this.prompts = [];
+            this.resources = [];
+            this.toolsCallback = [];
+            this.promptsCallback = [];
+            this.resourcesCallback = [];
 
             // close the mcp connection.
             await this.mcp.close();

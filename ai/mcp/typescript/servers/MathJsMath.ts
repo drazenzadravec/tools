@@ -111,6 +111,23 @@ export class MathJsMath extends McpServerBase {
         // return the result.
         return result;
     }
+
+    /**
+     * register all tools, prompts, resources.
+     * @returns {boolean}    true if registered; else false.
+     */
+    register(): boolean {
+        let registeredAll: boolean = true;
+
+        // ternary conditional statement.
+        // register tools.
+        registeredAll = this.registerTool_MathExpressionEvaluator() && registeredAll ? true : false;
+        registeredAll = this.registerPrompt_MathExpressionEvaluator() && registeredAll ? true : false;
+        registeredAll = this.registerPrompt_MathExpressionResult() && registeredAll ? true : false;
+
+        // if all registered.
+        return registeredAll;
+    }
 }
 
 /**
@@ -123,19 +140,12 @@ export async function mainMathJsMathServer(useStreamableHttp: boolean = false, s
 
     // start server.
     let mathjsmath_server: MathJsMath = new MathJsMath();
-    let registeredAll: boolean = true;
-
+    
     // set state
     mathjsmath_server.setHttpTransportStateless(stateless);
 
-    // ternary conditional statement.
-    // register tools.
-    registeredAll = mathjsmath_server.registerTool_MathExpressionEvaluator() && registeredAll ? true : false;
-    registeredAll = mathjsmath_server.registerPrompt_MathExpressionEvaluator() && registeredAll ? true : false;
-    registeredAll = mathjsmath_server.registerPrompt_MathExpressionResult() && registeredAll ? true : false;
-
     // if registered
-    if (registeredAll) {
+    if (mathjsmath_server.register()) {
         // start server.
         if (useStreamableHttp) {
             await mathjsmath_server.startServerHttp();
