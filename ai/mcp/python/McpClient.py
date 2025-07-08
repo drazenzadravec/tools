@@ -224,7 +224,7 @@ class McpClient:
                 self.open = False
                 raise  # Re-throws the same exception
 
-    async def openConnectionHttp(self, serverUrl: str):
+    async def openConnectionHttp(self, serverUrl: str, requestInit: dict[str, str] | None = None):
         """
         connect to the MCP server.
         start receiving messages on streamable HTTP.
@@ -233,16 +233,31 @@ class McpClient:
 
         Args:
             serverUrl: the server URL path.
+            requestInit:    ustomizes HTTP requests to the server.
+
+        Example:
+            serverUrl:  https://example.com/mcp
+            requestInit: {
+                'Authorization': 'Bearer <secret>'
+            }
         """
 
         # if not open.
         if not self.open:
             try:
+                http_transport = None;
+
                 # open a connection to the MCP server.
-                http_transport = await self.exit_stack.enter_async_context(streamablehttp_client(serverUrl))
+                if(requestInit is None):
+                    http_transport = await self.exit_stack.enter_async_context(streamablehttp_client(serverUrl))
+                else:
+                    http_transport = await self.exit_stack.enter_async_context(
+                        streamablehttp_client(url=serverUrl, headers=requestInit))
+
+                # get streams
                 self.read, self.write, _, = http_transport
                 self.session = await self.exit_stack.enter_async_context(ClientSession(self.read, self.write))
-
+                
                 # Initialize the connection
                 await self.session.initialize()
                 list_error: bool = False
