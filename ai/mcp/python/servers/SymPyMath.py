@@ -106,7 +106,7 @@ class SymPyMath(McpServerBase):
             the expression result.
         """
         result = ""
-
+        
         try:
             expr = sympify(expression)
             result = expr.evalf(15)
@@ -120,6 +120,24 @@ class SymPyMath(McpServerBase):
         # return the result.
         return result
 
+    def register(self) -> bool:
+        """
+        register all tools, prompts, resources.
+
+        Return:
+            true if registered; else false.
+        """
+        registeredAll: bool = True
+
+        # ternary conditional statement.
+        # register tools.
+        registeredAll = True if (self.registerTool_MathExpressionEvaluator() and registeredAll) else False
+        registeredAll = True if (self.registerPrompt_MathExpressionEvaluator() and registeredAll) else False
+        registeredAll = True if (self.registerPrompt_MathExpressionResult() and registeredAll) else False
+
+        # if all registered.
+        return registeredAll
+
 # if main.
 def mainSymPyMathServer(useStreamableHttp: bool = False) -> SymPyMath | None:
     """
@@ -130,16 +148,9 @@ def mainSymPyMathServer(useStreamableHttp: bool = False) -> SymPyMath | None:
     """
     # start server.
     sympymath_server = SymPyMath()
-    registeredAll: bool = True
-
-    # ternary conditional statement.
-    # register tools.
-    registeredAll = True if (sympymath_server.registerTool_MathExpressionEvaluator() and registeredAll) else False
-    registeredAll = True if (sympymath_server.registerPrompt_MathExpressionEvaluator() and registeredAll) else False
-    registeredAll = True if (sympymath_server.registerPrompt_MathExpressionResult() and registeredAll) else False
 
     # if registered
-    if (registeredAll):
+    if (sympymath_server.register()):
         # start server.
         if (useStreamableHttp):
             sympymath_server.startServerHttp()
