@@ -59,6 +59,14 @@ export interface McpPromptCallback {
 }
 
 /**
+ * Model context protocol prompt helper.
+ */
+export interface McpPromptHelper {
+    "name"?: string;
+    "prompt"?: string;
+}
+
+/**
  * Model context protocol resource.
  */
 export interface McpResource {

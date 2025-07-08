@@ -1,7 +1,10 @@
 import * as math from 'mathjs';
 import { z } from 'zod';
 
-import { McpServerBase } from '../McpServerBase.js';
+import {
+    McpServerBase,
+    McpPromptHelper
+} from '../McpServerBase.js';
 
 /**
  * MathJs Math Expression Evaluator.
@@ -127,6 +130,28 @@ export class MathJsMath extends McpServerBase {
 
         // if all registered.
         return registeredAll;
+    }
+
+    /**
+     * get the list of prompt helpers.
+     * @returns {Array<McpPromptHelper>} the list of prompt helpers.
+     */
+    getPromptHelpers(): Array<McpPromptHelper> {
+        let prompts: Array<McpPromptHelper> = [];
+
+        // add prompt
+        prompts.push({
+            name: "MathExpressionEvaluator",
+            prompt: "evaluate the math expression: {expression}"
+        });
+
+        prompts.push({
+            name: "MathExpressionResult",
+            prompt: "describe the result: {result}, using latex"
+        });
+
+        // return the helper list.
+        return prompts;
     }
 }
 
