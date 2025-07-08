@@ -282,8 +282,15 @@ export class McpClient {
      * For remote servers, set up a Streamable HTTP transport that handles 
      * both client requests and server-to-client notifications.
      * @param {string} serverUrl the server URL path.
+     * @param {RequestInit} requestInit customizes HTTP requests to the server.
+     * @example
+     *      serverUrl: "https://example.com/mcp",
+            requestInit: {
+                headers: { 'Authorization': 'Bearer <secret>'
+            }
+     * 
      */
-    async openConnectionHttp(serverUrl: string): Promise<void> {
+    async openConnectionHttp(serverUrl: string, requestInit?: RequestInit): Promise<void> {
 
         // if not open.
         if (!this.open) {
@@ -292,9 +299,18 @@ export class McpClient {
 
                 // create the transport to the server
                 // using the command and arguments
-                this.httpTransport = new StreamableHTTPClientTransport(
-                    new URL(baseUrl)
-                );
+                if (requestInit) {
+                    this.httpTransport = new StreamableHTTPClientTransport(
+                        new URL(baseUrl),
+                        {
+                            requestInit: requestInit
+                        }
+                    );
+                }
+                else {
+                    this.httpTransport = new StreamableHTTPClientTransport(
+                        new URL(baseUrl));
+                }
 
                 // open a connection to the MCP server.
                 await this.mcp.connect(this.httpTransport);
