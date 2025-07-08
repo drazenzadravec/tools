@@ -55,6 +55,17 @@ class McpResource:
         self.uri = uri
         self.mimeType = mimeType
 
+# Model context protocol prompt helper.
+class McpPromptHelper:
+    """
+    Model context protocol prompt helper.
+    """
+    def __init__(self,
+                 name: str,
+                 prompt: str):
+        self.name = name
+        self.prompt = prompt
+
 # Model context protocol server base.
 class McpServerBase:
     """

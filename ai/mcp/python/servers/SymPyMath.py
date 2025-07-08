@@ -6,7 +6,7 @@ from typing import Optional, Any, List, Union
 from mcp.server.fastmcp import FastMCP
 from mcp.server.fastmcp.prompts.base import PromptArgument, Message, TextContent
 
-from ..McpServerBase import McpServerBase
+from ..McpServerBase import McpServerBase, McpPromptHelper
 
 # SymPy Math Expression Evaluator.
 class SymPyMath(McpServerBase):
@@ -137,6 +137,29 @@ class SymPyMath(McpServerBase):
 
         # if all registered.
         return registeredAll
+
+    def getPromptHelpers(self) -> List[McpPromptHelper]:
+        """
+        get the list of prompt helpers.
+
+        Return:
+            the list of prompt helpers.
+        """
+        prompts: List[McpPromptHelper] = [];
+
+        # add prompt.
+        prompts.append(McpPromptHelper(
+            "MathExpressionEvaluator",
+            "evaluate the math expression: {expression}"
+        ))
+
+        prompts.append(McpPromptHelper(
+            "MathExpressionResult",
+            "describe the result: {result}, using latex"
+        ))
+
+        # return the helper list.
+        return prompts
 
 # if main.
 def mainSymPyMathServer(useStreamableHttp: bool = False) -> SymPyMath | None:
