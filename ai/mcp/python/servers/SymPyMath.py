@@ -39,7 +39,7 @@ class SymPyMath(McpServerBase):
         return self.registerPrompt(
             "MathExpressionEvaluator",
             self.mathExpressionEvaluatorPrompt,
-            "Use SymPy to execute the mathematical expressions",
+            "Evaluate the mathematical expression",
             [ PromptArgument(name = "expression", description = "the math expression", required = True) ]
         )
 

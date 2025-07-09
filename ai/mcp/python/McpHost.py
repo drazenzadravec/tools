@@ -14,6 +14,10 @@ class McpClientModel:
         self.id = id
         self.client = client
 
+    def __repr__(self):
+        return f"McpClientModel(id={self.id}, " \
+            f"client={self.client})"
+
 # Model context protocol server model.
 class McpServerModel:
     """
@@ -24,6 +28,10 @@ class McpServerModel:
                  server: McpServerBase):
         self.id = id
         self.server = server
+
+    def __repr__(self):
+        return f"McpServerModel(id={self.id}, " \
+            f"server={self.server})"
 
 # Model context protocol host.
 class McpHost:
