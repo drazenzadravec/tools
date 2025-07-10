@@ -53,4 +53,15 @@ export class SymPyMath extends McpClient {
         // return the result.
         return res;
     }
+
+    /**
+     * call the SymPy documentation URL resource.
+     * @returns {Promise<any>} the evaluated result.
+     */
+    async callSymPyDocsUrlResource(): Promise<any> {
+        let res: any = await this.callResource("sympy://{version}");
+
+        // return the result.
+        return res;
+    }
 }

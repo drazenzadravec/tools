@@ -53,4 +53,15 @@ export class MathJsMathClient extends McpClient {
         // return the result.
         return res;
     }
+
+    /**
+     * call the MathJs documentation URL resource.
+     * @returns {Promise<any>} the evaluated result.
+     */
+    async callMathJsDocsUrlResource(): Promise<any> {
+        let res: any = await this.callResource("mathjs://{version}");
+
+        // return the result.
+        return res;
+    }
 }

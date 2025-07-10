@@ -96,6 +96,30 @@ export class MathJsMath extends McpServerBase {
     }
 
     /**
+     * register resource mthjs documentation URL.
+     * @returns {boolean} true if register; else false.
+     */
+    registerResource_MathJsDocsUrl(): boolean {
+
+        return this.registerResource(
+            "MathExpressionMathJsDocsUrl",
+            "mathjs://{version}",
+            {
+                title: "MathExpressionMathJsDocsUrl",
+                description: "Get the MathJs documentation URL",
+                mimeType: "text/plain"
+            },
+            async (uri) => ({
+                contents: [{
+                    uri: uri.href,
+                    mimeType: "text/plain",
+                    text: "https://mathjs.org/docs/index.html"
+                }]
+            })
+        )
+    }
+
+    /**
      * math expression evaluator.
      * @param {string} expression   the expression to evaluate.
      * @returns {string}    the expression result.
@@ -127,6 +151,7 @@ export class MathJsMath extends McpServerBase {
         registeredAll = this.registerTool_MathExpressionEvaluator() && registeredAll ? true : false;
         registeredAll = this.registerPrompt_MathExpressionEvaluator() && registeredAll ? true : false;
         registeredAll = this.registerPrompt_MathExpressionResult() && registeredAll ? true : false;
+        registeredAll = this.registerResource_MathJsDocsUrl() && registeredAll ? true : false;
 
         // if all registered.
         return registeredAll;
