@@ -3,7 +3,7 @@
 Contains MCP tools and samples that can be used in any project.
 
 ### Support
-For MCP Tools, Prompts, Resources
+Python and TypeScript MCP Tools, Prompts, Resources
 
 ### See
 
