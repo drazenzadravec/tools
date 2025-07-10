@@ -57,6 +57,21 @@ class SymPyMath(McpServerBase):
             [ PromptArgument(name = "result", description = "the math evaluated result", required = True) ]
         )
 
+    def registerResource_SymPyDocsUrl(self) -> bool:
+        """
+        register resource sympy documentation URL.
+
+        Return:
+            true if resource registered; else false.
+        """
+        return self.registerResource(
+            "MathExpressionSymPyDocsUrl",
+            "sympy://{version}",
+            self.mathExpressionSymPyDocsUrlResource,
+            "Get the SymPy documentation URL",
+            "text/plain"
+        )
+
     def mathExpressionEvaluatorPrompt(self, expression: str) -> List[Message]:
         """
         prompt math expression evaluator.
@@ -120,6 +135,15 @@ class SymPyMath(McpServerBase):
         # return the result.
         return result
 
+    def mathExpressionSymPyDocsUrlResource(self) -> str:
+        """
+        SymPy documentation URL resource math expression result.
+
+        Return:
+            the resource result.
+        """
+        return f"https://docs.sympy.org/latest/index.html"
+
     def register(self) -> bool:
         """
         register all tools, prompts, resources.
@@ -134,6 +158,7 @@ class SymPyMath(McpServerBase):
         registeredAll = True if (self.registerTool_MathExpressionEvaluator() and registeredAll) else False
         registeredAll = True if (self.registerPrompt_MathExpressionEvaluator() and registeredAll) else False
         registeredAll = True if (self.registerPrompt_MathExpressionResult() and registeredAll) else False
+        registeredAll = True if (self.registerResource_SymPyDocsUrl() and registeredAll) else False
 
         # if all registered.
         return registeredAll

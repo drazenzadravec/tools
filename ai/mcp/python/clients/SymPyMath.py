@@ -54,3 +54,15 @@ class SymPyMath(McpClient):
 
         # return the result.
         return res;
+
+    async def callSymPyDocsUrlResource(self) -> Union[Any, None]:
+        """
+        call the SymPy documentation URL resource.
+
+        Return:
+            the resource result.
+        """
+        res: Any = await self.callResource("sympy://{version}")
+
+        # return the result.
+        return res;

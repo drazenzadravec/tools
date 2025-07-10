@@ -5,7 +5,8 @@ from pydantic import AnyUrl, TypeAdapter
 from typing import Optional, Any, List, Union
 
 from mcp.server.fastmcp import FastMCP
-from mcp.server.fastmcp.resources.base import Resource
+from mcp.server.fastmcp.resources import Resource, ResourceTemplate
+from mcp.server.fastmcp.resources.types import FunctionResource
 from mcp.server.fastmcp.prompts.base import Prompt, PromptArgument
 
 # Model context protocol tool.
@@ -216,13 +217,17 @@ class McpServerBase:
         """
         result: bool = False
         try:
-            self.mcp.add_resource(Resource(
-                callback,
-                uri,
-                name,
-                description,
-                mimeType
-            ))
+            # new resource 
+            functionResource: FunctionResource = FunctionResource(
+                uri = uri,
+                name = name,
+                description = description,
+                mime_type = mimeType,
+                fn = callback
+            )
+
+            # create from function.
+            self.mcp.add_resource(functionResource)
             result = True
         except Exception as e:
             raise
@@ -349,7 +354,7 @@ class McpServerBase:
                     # create the resource model.
                     resources.append(McpResource(
                         resource.name,
-                        resource.name,
+                        resource.name ,
                         resource.description,
                         resource.uri,
                         resource.mimeType
