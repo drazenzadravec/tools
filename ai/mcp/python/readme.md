@@ -1,4 +1,4 @@
-## Python MCP Sample
+### Python Samples
 
 ```python
 import asyncio
