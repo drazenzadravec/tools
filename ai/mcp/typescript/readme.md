@@ -1,4 +1,4 @@
-## TypeScript MCP Sample
+### TypeScript Sample
 
 ```typescript
 import { MathJsMathClient } from './clients/MathJsMath.js';
