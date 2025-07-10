@@ -72,6 +72,21 @@ class SymPyMath(McpServerBase):
             "text/plain"
         )
 
+    def registerResource_SymPyDocsUrl_Version(self) -> bool:
+        """
+        register resource sympy documentation URL version.
+
+        Return:
+            true if resource registered; else false.
+        """
+        return self.registerResource(
+            "MathExpressionSymPyDocsUrlVersion",
+            "sympy://doc/{version}/num",
+            self.mathExpressionSymPyDocsUrlResource,
+            "Get the SymPy documentation URL version",
+            "text/plain"
+        )
+
     def mathExpressionEvaluatorPrompt(self, expression: str) -> List[Message]:
         """
         prompt math expression evaluator.
@@ -159,6 +174,7 @@ class SymPyMath(McpServerBase):
         registeredAll = True if (self.registerPrompt_MathExpressionEvaluator() and registeredAll) else False
         registeredAll = True if (self.registerPrompt_MathExpressionResult() and registeredAll) else False
         registeredAll = True if (self.registerResource_SymPyDocsUrl() and registeredAll) else False
+        registeredAll = True if (self.registerResource_SymPyDocsUrl_Version() and registeredAll) else False
 
         # if all registered.
         return registeredAll
