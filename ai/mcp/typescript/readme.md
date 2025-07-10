@@ -1,5 +1,6 @@
-### TypeScript Sample
+## TypeScript Sample
 
+### Stdio
 ```typescript
 import { MathJsMathClient } from './clients/MathJsMath.js';
 
@@ -19,6 +20,7 @@ console.log(resultPrompt.messages);
 console.log(resultPrompt1.messages);
 ```
 
+### HTTP
 ```typescript
 import { MathJsMathClient } from './clients/MathJsMath.js';
 
