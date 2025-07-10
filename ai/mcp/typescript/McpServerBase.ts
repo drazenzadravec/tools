@@ -4,10 +4,6 @@ import {
     RegisteredPrompt,
     RegisteredResource,
     RegisteredResourceTemplate,
-    ToolCallback,
-    PromptCallback,
-    ReadResourceCallback,
-    ReadResourceTemplateCallback,
     ResourceTemplate
 } from "@modelcontextprotocol/sdk/server/mcp.js";
 import {
@@ -18,81 +14,16 @@ import {
 } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 
 import { randomUUID } from "node:crypto";
+
 import {
-    z,
-    ZodRawShape,
-} from 'zod';
-
-/**
- * Model context protocol tool.
- */
-export interface McpTool {
-    "name"?: string;
-    "title"?: string;
-    "description"?: string;
-    "inputSchema"?: any;
-}
-
-/**
- * Model context protocol tool callback.
- */
-export interface McpToolCallback {
-    "name"?: string;
-    "callback"?: ToolCallback<undefined | ZodRawShape>;
-}
-
-/**
- * Model context protocol prompt.
- */
-export interface McpPrompt {
-    "name"?: string;
-    "title"?: string;
-    "description"?: string;
-    "arguments"?: any;
-}
-
-/**
- * Model context protocol prompt callback.
- */
-export interface McpPromptCallback {
-    "name"?: string;
-    "callback"?: PromptCallback<undefined | any /*PromptArgsRawShape*/>;
-}
-
-/**
- * Model context protocol prompt helper.
- */
-export interface McpPromptHelper {
-    "name"?: string;
-    "prompt"?: string;
-}
-
-/**
- * Model context protocol resource.
- */
-export interface McpResource {
-    "name"?: string;
-    "title"?: string;
-    "description"?: string;
-    "uri"?: string | ResourceTemplate;
-    "mimeType"?: string;
-}
-
-/**
- * Model context protocol resource callback.
- */
-export interface McpResourceCallback {
-    "name"?: string;
-    "callback"?: ReadResourceCallback | ReadResourceTemplateCallback;
-}
-
-/**
- * mcp http transport model.
- */
-export interface McpHttpTransportModel {
-    sessionId: string;
-    transport: StreamableHTTPServerTransport;
-}
+    McpTool,
+    McpPrompt,
+    McpResource,
+    McpToolCallback,
+    McpPromptCallback,
+    McpResourceCallback,
+    McpHttpTransportModel
+} from "./McpTypes.js";
 
 /**
  * Model context protocol server base.
@@ -265,7 +196,7 @@ export class McpServerBase {
     /**
      * registers a resource with a config object and callback.
      * @param {string} name         the name of the resource
-     * @param {string} uriOrTemplate    the URI or Template.
+     * @param {string} uri    the URI.
      * @param {object} config   the resource configuration 
      * @param {Function} callback   the callback function.
      * @returns {boolean} true if register; else false.
@@ -287,7 +218,7 @@ export class McpServerBase {
      */
     registerResource(
         name: string,
-        uriOrTemplate: string,
+        uri: string,
         config: {
             title?: string;
             description?: string;
@@ -299,7 +230,7 @@ export class McpServerBase {
         try {
             let registeredResource: RegisteredResource | RegisteredResourceTemplate = this.mcp.registerResource(
                 name,
-                uriOrTemplate,
+                uri,
                 {
                     title: config.title,
                     description: config.description,
@@ -313,7 +244,7 @@ export class McpServerBase {
                 name: name,
                 title: config.title,
                 description: config.description,
-                uri: uriOrTemplate,
+                uri: uri,
                 mimeType: config.mimeType
             });
             this.resourcesCallback.push({
@@ -330,7 +261,7 @@ export class McpServerBase {
     /**
      * registers a resource template with a config object and callback.
      * @param {string} name         the name of the resource
-     * @param {ResourceTemplate} uriOrTemplate    the URI or Template.
+     * @param {ResourceTemplate} template    the Template.
      * @param {object} config   the resource configuration 
      * @param {Function} callback   the callback function.
      * @returns {boolean} true if register; else false.
@@ -352,7 +283,7 @@ export class McpServerBase {
      */
     registerResourceTemplate(
         name: string,
-        uriOrTemplate: ResourceTemplate,
+        template: ResourceTemplate,
         config: {
             title?: string;
             description?: string;
@@ -364,7 +295,7 @@ export class McpServerBase {
         try {
             let registeredResource: RegisteredResource | RegisteredResourceTemplate = this.mcp.registerResource(
                 name,
-                uriOrTemplate,
+                template,
                 {
                     title: config.title,
                     description: config.description,
@@ -378,7 +309,7 @@ export class McpServerBase {
                 name: name,
                 title: config.title,
                 description: config.description,
-                uri: uriOrTemplate,
+                uri: template,
                 mimeType: config.mimeType
             });
             this.resourcesCallback.push({

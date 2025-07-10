@@ -12,7 +12,7 @@ import {
     McpTool,
     McpPrompt,
     McpResource
-} from './McpServerBase.js'
+} from './McpTypes.js'
 
 /**
  * Model context protocol client.

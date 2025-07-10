@@ -4,8 +4,10 @@ import { ResourceTemplate } from "@modelcontextprotocol/sdk/server/mcp.js";
 
 import {
     McpServerBase,
-    McpPromptHelper
 } from '../McpServerBase.js';
+import {
+    McpPromptHelper
+} from '../McpTypes.js';
 
 /**
  * MathJs Math Expression Evaluator.
