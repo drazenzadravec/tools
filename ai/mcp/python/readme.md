@@ -1,5 +1,6 @@
 ### Python Samples
 
+## Stdio
 ```python
 import asyncio
 import sys
