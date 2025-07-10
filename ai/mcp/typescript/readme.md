@@ -1,6 +1,6 @@
 ## TypeScript MCP Implementation
 
-Includes a base client and server class which can be inherited be classes.
+Includes a base client and server class which can be inherited by custom classes.
 
 ### Client
 ```typescript
