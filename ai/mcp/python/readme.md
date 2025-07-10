@@ -1,6 +1,6 @@
-### Python Samples
+## Python Samples
 
-## Stdio
+### Stdio
 ```python
 import asyncio
 import sys
@@ -32,6 +32,7 @@ if __name__ == "__main__":
     asyncio.run(main())
 ```
 
+### HTTP
 ```python
 import asyncio
 import sys
