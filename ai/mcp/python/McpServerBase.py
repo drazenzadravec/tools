@@ -2,93 +2,15 @@ from contextlib import asynccontextmanager
 from collections.abc import AsyncIterator
 
 from pydantic import AnyUrl, TypeAdapter
-from typing import Optional, Any, List, Union
+from typing import Optional, Any, List, Union, Callable, Awaitable
 
 from mcp.server.fastmcp import FastMCP
 from mcp.server.fastmcp.resources import Resource, ResourceTemplate
 from mcp.server.fastmcp.resources.types import FunctionResource
-from mcp.server.fastmcp.prompts.base import Prompt, PromptArgument
+from mcp.server.fastmcp.prompts.base import Prompt, PromptArgument, PromptResult
+from mcp.server.fastmcp.resources.templates import ResourceTemplate
 
-# Model context protocol tool.
-class McpTool:
-    """
-    Model context protocol tool.
-    """
-    def __init__(self,
-                 name: str,
-                 title: str,
-                 description: str,
-                 inputSchema: Any):
-        self.name = name
-        self.title = title
-        self.description = description
-        self.inputSchema = inputSchema
-
-    def __repr__(self):
-        return f"McpTool(name={self.name}, " \
-            f"title={self.title}, " \
-            f"description={self.description}, " \
-            f"inputSchema={self.inputSchema})"
-
-# Model context protocol prompt.
-class McpPrompt:
-    """
-    Model context protocol prompt.
-    """
-    def __init__(self,
-                 name: str,
-                 title: str,
-                 description: str,
-                 arguments: Any):
-        self.name = name
-        self.title = title
-        self.description = description
-        self.arguments = arguments
-
-    def __repr__(self):
-        return f"McpPrompt(name={self.name}, " \
-            f"title={self.title}, " \
-            f"description={self.description}, " \
-            f"arguments={self.arguments})"
-
-# Model context protocol resource.
-class McpResource:
-    """
-    Model context protocol resource.
-    """
-    def __init__(self,
-                 name: str,
-                 title: str,
-                 description: str,
-                 uri: str,
-                 mimeType: str):
-        self.name = name
-        self.title = title
-        self.description = description
-        self.uri = uri
-        self.mimeType = mimeType
-
-    def __repr__(self):
-        return f"McpResource(name={self.name}, " \
-            f"title={self.title}, " \
-            f"description={self.description}, " \
-            f"uri={self.uri}, " \
-            f"mimeType={self.mimeType})"
-
-# Model context protocol prompt helper.
-class McpPromptHelper:
-    """
-    Model context protocol prompt helper.
-    """
-    def __init__(self,
-                 name: str,
-                 prompt: str):
-        self.name = name
-        self.prompt = prompt
-
-    def __repr__(self):
-        return f"McpPromptHelper(name={self.name}, " \
-            f"prompt={self.prompt})"
+from .McpTypes import McpTool, McpPrompt, McpResource
 
 # Model context protocol server base.
 class McpServerBase:
@@ -130,6 +52,13 @@ class McpServerBase:
         # Create an MCP server
         self.mcp: FastMCP = FastMCP(name, instructions=instructions, stateless_http=stateless, json_response=True)
 
+    def __repr__(self):
+        return f"McpServerBase(name={self.name}, " \
+            f"instructions={self.instructions}, " \
+            f"stateless={self.stateless}, " \
+            f"version={self.version})"
+
+
     def hasStarted(self) -> bool:
         """
         has to MCP server started.
@@ -150,7 +79,7 @@ class McpServerBase:
 
     def registerTool(self, 
                      name: str, 
-                     callback: Any,
+                     callback: Callable[..., Any],
                      description: str | None = None,
                      annotations: Any | None = None) -> bool:
         """
@@ -186,17 +115,17 @@ class McpServerBase:
 
     def registerResource(self, 
                      name: str, 
-                     uri: str,
-                     callback: Any,
+                     uri: AnyUrl,
+                     callback: Callable[[], Any],
                      description: str | None = None,
-                     mimeType: Any | None = None) -> bool:
+                     mimeType: str | None = None) -> bool:
         """
         registers a resource with a config object and callback.
 
         Args:
             name:  the name of the resource
             uri:    the URI
-            callback:   the callback function.
+            callback:   the callback function, does not take any parameters.
             description:    the resource description
             mimeType:    the mime type
 
@@ -234,9 +163,51 @@ class McpServerBase:
 
         return result
 
+    def registerResourceTemplate(self, 
+                     name: str, 
+                     uri: AnyUrl,
+                     callback: Callable[..., Any],
+                     description: str | None = None,
+                     mimeType: str | None = None) -> bool:
+        """
+        registers a resource template with a config object and callback.
+
+        Args:
+            name:  the name of the resource
+            uri:    the URI
+            callback:   the callback function.
+            description:    the resource description
+            mimeType:    the mime type
+
+        Return:
+            true if resource is registered; else false.
+
+        Example:
+            "config",
+            "config://app",
+            lambda (uri, { userId }) => ({
+                contents: [{
+                    uri: uri.href,
+                    text: f"Profile data for user {userId}"
+                }]
+            }),
+            "Application configuration data",
+            "text/plain"
+        """
+        result: bool = False
+        try:
+            # new resource 
+            resourceTemplate: ResourceTemplate = self.mcp._resource_manager.add_template(
+                callback, uri, name, description, mimeType)
+            result = True
+        except Exception as e:
+            raise
+
+        return result
+
     def registerPrompt(self, 
                      name: str, 
-                     callback: Any,
+                     callback: Callable[..., PromptResult | Awaitable[PromptResult]],
                      description: str | None = None,
                      argsSchema: List[PromptArgument] | None = None) -> bool:
         """

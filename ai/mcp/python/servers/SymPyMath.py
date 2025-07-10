@@ -1,12 +1,13 @@
 from sympy import *
 from sympy import sympify
 
-from typing import Optional, Any, List, Union
+from typing import Optional, Any, List, Union, Callable, Awaitable
 
 from mcp.server.fastmcp import FastMCP
 from mcp.server.fastmcp.prompts.base import PromptArgument, Message, TextContent
 
-from ..McpServerBase import McpServerBase, McpPromptHelper
+from ..McpServerBase import McpServerBase
+from ..McpTypes import McpPromptHelper
 
 # SymPy Math Expression Evaluator.
 class SymPyMath(McpServerBase):
@@ -79,10 +80,10 @@ class SymPyMath(McpServerBase):
         Return:
             true if resource registered; else false.
         """
-        return self.registerResource(
+        return self.registerResourceTemplate(
             "MathExpressionSymPyDocsUrlVersion",
             "sympy://doc/{version}/num",
-            self.mathExpressionSymPyDocsUrlResource,
+            self.mathExpressionSymPyDocsUrlVersionResource,
             "Get the SymPy documentation URL version",
             "text/plain"
         )
@@ -152,12 +153,24 @@ class SymPyMath(McpServerBase):
 
     def mathExpressionSymPyDocsUrlResource(self) -> str:
         """
-        SymPy documentation URL resource math expression result.
+        SymPy documentation URL resource.
 
         Return:
             the resource result.
         """
         return f"https://docs.sympy.org/latest/index.html"
+
+    def mathExpressionSymPyDocsUrlVersionResource(self, version: str) -> str:
+        """
+        SymPy documentation URL resource version.
+
+        Args:
+            version: the version.
+
+        Return:
+            the resource result.
+        """
+        return f"The document version {version}"
 
     def register(self) -> bool:
         """

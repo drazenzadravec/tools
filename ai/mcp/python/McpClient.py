@@ -6,7 +6,7 @@ from pydantic import AnyUrl, TypeAdapter
 from typing import Optional, Any, List, Union
 from contextlib import AsyncExitStack
 
-from .McpServerBase import McpTool, McpPrompt, McpResource
+from .McpTypes import McpTool, McpPrompt, McpResource
 
 # Model context protocol client.
 class McpClient:
