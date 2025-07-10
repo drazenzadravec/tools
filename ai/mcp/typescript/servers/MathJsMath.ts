@@ -1,5 +1,6 @@
 import * as math from 'mathjs';
 import { z } from 'zod';
+import { ResourceTemplate } from "@modelcontextprotocol/sdk/server/mcp.js";
 
 import {
     McpServerBase,
@@ -120,6 +121,30 @@ export class MathJsMath extends McpServerBase {
     }
 
     /**
+     * register resource mthjs documentation URL version.
+     * @returns {boolean} true if register; else false.
+     */
+    registerResource_MathJsDocsUrl_Version(): boolean {
+
+        return this.registerResourceTemplate(
+            "MathExpressionMathJsDocsUrlVersion",
+            new ResourceTemplate("mathjs://doc/{version}/num", { list: undefined }),
+            {
+                title: "MathExpressionMathJsDocsUrlVersion",
+                description: "Get the MathJs documentation URL version",
+                mimeType: "text/plain"
+            },
+            async (uri, { version }) => ({
+                contents: [{
+                    uri: uri.href,
+                    mimeType: "text/plain",
+                    text: `The document version ${version}`
+                }]
+            })
+        )
+    }
+
+    /**
      * math expression evaluator.
      * @param {string} expression   the expression to evaluate.
      * @returns {string}    the expression result.
@@ -152,6 +177,7 @@ export class MathJsMath extends McpServerBase {
         registeredAll = this.registerPrompt_MathExpressionEvaluator() && registeredAll ? true : false;
         registeredAll = this.registerPrompt_MathExpressionResult() && registeredAll ? true : false;
         registeredAll = this.registerResource_MathJsDocsUrl() && registeredAll ? true : false;
+        registeredAll = this.registerResource_MathJsDocsUrl_Version() && registeredAll ? true : false;
 
         // if all registered.
         return registeredAll;

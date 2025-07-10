@@ -64,4 +64,16 @@ export class SymPyMath extends McpClient {
         // return the result.
         return res;
     }
+
+    /**
+     * call the SymPy documentation URL resource.
+     * @param {string} version     the version.
+     * @returns {Promise<any>} the evaluated result.
+     */
+    async callSymPyDocsUrlVersionResource(version: string): Promise<any> {
+        let res: any = await this.callResource(`sympy://doc/${version}/num`);
+
+        // return the result.
+        return res;
+    }
 }

@@ -7,7 +7,8 @@ import {
     ToolCallback,
     PromptCallback,
     ReadResourceCallback,
-    ReadResourceTemplateCallback
+    ReadResourceTemplateCallback,
+    ResourceTemplate
 } from "@modelcontextprotocol/sdk/server/mcp.js";
 import {
     StdioServerTransport
@@ -73,7 +74,7 @@ export interface McpResource {
     "name"?: string;
     "title"?: string;
     "description"?: string;
-    "uri"?: string;
+    "uri"?: string | ResourceTemplate;
     "mimeType"?: string;
 }
 
@@ -327,6 +328,71 @@ export class McpServerBase {
     }
 
     /**
+     * registers a resource template with a config object and callback.
+     * @param {string} name         the name of the resource
+     * @param {ResourceTemplate} uriOrTemplate    the URI or Template.
+     * @param {object} config   the resource configuration 
+     * @param {Function} callback   the callback function.
+     * @returns {boolean} true if register; else false.
+     * @example 
+     *  Application Config:
+     *  "config",
+     *  new ResourceTemplate("users://{userId}/profile", { list: undefined }),,
+        {
+            title: "User Profile",
+            description: "User profile information",
+            mimeType: "text/plain"
+        },
+        async (uri, { userId }) => ({
+            contents: [{
+                uri: uri.href,
+                text: `Profile data for user ${userId}`
+            }]
+        })
+     */
+    registerResourceTemplate(
+        name: string,
+        uriOrTemplate: ResourceTemplate,
+        config: {
+            title?: string;
+            description?: string;
+            mimeType?: string;
+        },
+        callback: any
+    ): boolean {
+        let result: boolean = false;
+        try {
+            let registeredResource: RegisteredResource | RegisteredResourceTemplate = this.mcp.registerResource(
+                name,
+                uriOrTemplate,
+                {
+                    title: config.title,
+                    description: config.description,
+                    mimeType: config.mimeType
+                },
+                callback
+            );
+
+            // add the resource
+            this.resources.push({
+                name: name,
+                title: config.title,
+                description: config.description,
+                uri: uriOrTemplate,
+                mimeType: config.mimeType
+            });
+            this.resourcesCallback.push({
+                name: name,
+                callback: registeredResource.readCallback
+            });
+            result = true;
+        } catch (e) {
+            throw e;
+        }
+        return result;
+    }
+
+    /**
      * registers a prompt with a config object and callback.
      * @param {string} name         the name of the prompt
      * @param {object} config   the prompt configuration 
@@ -451,17 +517,28 @@ export class McpServerBase {
      * read the resource.
      * @param {string} name     the name of the resource
      * @param {string} uri  the resource URI.
+     * @param {object} args     the arguments if any.
      * @returns {object} the result; else null.
      */
-    async callResource(name: string, uri: string): Promise<any | null> {
+    async callResource(name: string, uri: string, args?: any): Promise<any | null> {
 
         // try find the resource.
         let mcpResourceCallback: McpResourceCallback = this.resourcesCallback.find(function (item) {
             return (item.name === name || item.name === name);
         })
+        let mcpResource: McpResource = this.resources.find(function (item) {
+            return (item.name === name || item.name === name);
+        })
 
-        // call the tool.
-        return await Promise.resolve(mcpResourceCallback.callback(new URL(uri), null, null));
+        // find the uri type
+        if (typeof mcpResource.uri === "string") {
+            // call the tool.
+            return await Promise.resolve(mcpResourceCallback.callback(new URL(uri), null, null));
+        }
+        else {
+            // call the tool.
+            return await Promise.resolve(mcpResourceCallback.callback(new URL(uri), args, null));
+        }
     }
 
     /**
