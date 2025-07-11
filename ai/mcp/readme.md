@@ -3,7 +3,7 @@
 Contains MCP tools and samples that can be used in any project.
 
 ### Support
-Python and TypeScript applications of clent and server MCP implementations supporting tools, prompts and resources.
+Python and TypeScript applications of client and server MCP implementations supporting tools, prompts and resources.
 
 ### See
 
