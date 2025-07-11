@@ -1,6 +1,6 @@
 ## TypeScript MCP Implementation
 
-Includes a base client and server class which can be inherited by custom classes. <a href="https://github.com/modelcontextprotocol/typescript-sdk" target="_blank">typescript-sdk</a>
+Includes base client and server classes which can be inherited by custom classes. <a href="https://github.com/modelcontextprotocol/typescript-sdk" target="_blank">typescript-sdk</a>
 
 ### Client
 ```typescript
