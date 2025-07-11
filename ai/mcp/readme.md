@@ -7,4 +7,5 @@ Python and TypeScript MCP Tools, Prompts, Resources
 
 ### See
 
-<a href="https://modelcontextprotocol.io/introduction" target="_blank">MCP Website</a>
+<a href="https://modelcontextprotocol.io/introduction" target="_blank">ntroduction</a>
+<a href="https://modelcontextprotocol.io/docs/concepts/architecture" target="_blank">Core Architecture</a>
