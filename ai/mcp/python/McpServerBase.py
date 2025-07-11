@@ -50,7 +50,10 @@ class McpServerBase:
         self.stateless = stateless
 
         # Create an MCP server
-        self.mcp: FastMCP = FastMCP(name, instructions=instructions, stateless_http=stateless, json_response=True)
+        self.mcp: FastMCP = FastMCP(name=name, 
+                                    instructions=instructions, 
+                                    stateless_http=stateless, 
+                                    json_response=True)
 
     def __repr__(self):
         return f"McpServerBase(name={self.name}, " \
