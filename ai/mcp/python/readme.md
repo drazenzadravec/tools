@@ -1,6 +1,6 @@
 ## Python MCP Implementation
 
-Includes a base client and server class which can be inherited by custom classes.
+Includes a base client and server class which can be inherited by custom classes. <a href="https://github.com/modelcontextprotocol/python-sdk" target="_blank">python-sdk</a>
 
 ### Client
 ```python
