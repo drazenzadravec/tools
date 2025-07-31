@@ -199,6 +199,11 @@ export class MathJsMath extends McpServerBase {
         });
 
         prompts.push({
+            name: "MathExpressionEvaluator",
+            prompt: "evaluate the math expression: {expression}, leave expression unchanged"
+        });
+
+        prompts.push({
             name: "MathExpressionResult",
             prompt: "describe the result: {result}, using latex"
         });

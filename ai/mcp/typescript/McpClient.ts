@@ -245,21 +245,45 @@ export class McpClient {
                 } catch (eprompts) {
                     list_error = true;
                 }
-
+                
                 try {
                     // load all resources.
                     const resourcesResult = await this.mcp.listResources();
                     if (resourcesResult !== null) {
                         if (resourcesResult.resources.length > 0) {
-                            this.resources = resourcesResult.resources.map((resource) => {
-                                return {
+                            for (var i = 0; i < resourcesResult.resources.length; i++) {
+
+                                let resource = resourcesResult.resources[i];
+                                this.resources.push({
                                     name: resource.name,
                                     title: resource.title,
                                     description: resource.description,
                                     uri: resource.uri,
                                     mimeType: resource.mimeType
-                                };
-                            });
+                                });
+                            }
+                        }
+                    }
+                } catch (eresources) {
+                    list_error = true;
+                }
+
+                try {
+                    // load all resources.
+                    const resourcesResultTemplates = await this.mcp.listResourceTemplates();
+                    if (resourcesResultTemplates !== null) {
+                        if (resourcesResultTemplates.resourceTemplates.length > 0) {
+                            for (var i = 0; i < resourcesResultTemplates.resourceTemplates.length; i++) {
+
+                                let resource = resourcesResultTemplates.resourceTemplates[i];
+                                this.resources.push({
+                                    name: resource.name,
+                                    title: resource.title,
+                                    description: resource.description,
+                                    uri: resource.uriTemplate,
+                                    mimeType: resource.mimeType
+                                });
+                            }
                         }
                     }
                 } catch (eresources) {
@@ -359,15 +383,39 @@ export class McpClient {
                     const resourcesResult = await this.mcp.listResources();
                     if (resourcesResult !== null) {
                         if (resourcesResult.resources.length > 0) {
-                            this.resources = resourcesResult.resources.map((resource) => {
-                                return {
+                            for (var i = 0; i < resourcesResult.resources.length; i++) {
+
+                                let resource = resourcesResult.resources[i];
+                                this.resources.push({
                                     name: resource.name,
                                     title: resource.title,
                                     description: resource.description,
                                     uri: resource.uri,
                                     mimeType: resource.mimeType
-                                };
-                            });
+                                });
+                            }
+                        }
+                    }
+                } catch (eresources) {
+                    list_error = true;
+                }
+
+                try {
+                    // load all resources.
+                    const resourcesResultTemplates = await this.mcp.listResourceTemplates();
+                    if (resourcesResultTemplates !== null) {
+                        if (resourcesResultTemplates.resourceTemplates.length > 0) {
+                            for (var i = 0; i < resourcesResultTemplates.resourceTemplates.length; i++) {
+
+                                let resource = resourcesResultTemplates.resourceTemplates[i];
+                                this.resources.push({
+                                    name: resource.name,
+                                    title: resource.title,
+                                    description: resource.description,
+                                    uri: resource.uriTemplate,
+                                    mimeType: resource.mimeType
+                                });
+                            }
                         }
                     }
                 } catch (eresources) {
