@@ -336,6 +336,22 @@ class McpServerBase:
         except Exception as eresources:
             list_error: bool = True
 
+        try:
+            # load all resources.
+            resourcesResultTemplate = await self.mcp.list_resource_templates()
+            if resourcesResultTemplate is not None:
+                for resourceTemplate in resourcesResultTemplate:
+                    # create the resource model.
+                    resources.append(McpResource(
+                        resourceTemplate.name,
+                        resourceTemplate.name ,
+                        resourceTemplate.description,
+                        resourceTemplate.uriTemplate,
+                        resourceTemplate.mimeType
+                    ))
+        except Exception as eresources:
+            list_error: bool = True
+
         return resources
 
     async def callTool(self, name: str, args: dict[str, Any] | None = None) -> Union[Any, None]:

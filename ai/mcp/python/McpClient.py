@@ -217,6 +217,23 @@ class McpClient:
                 except Exception as eresources:
                     list_error: bool = True
 
+                try:
+                    # load all resources.
+                    resourcesResultTemplates = await self.session.list_resource_templates()
+                    if resourcesResultTemplates is not None:
+                        if resourcesResultTemplates.resourceTemplates is not None:
+                            for resource in resourcesResultTemplates.resourceTemplates:
+                                # create the resource model.
+                                self.resources.append(McpResource(
+                                    resource.name,
+                                    resource.name,
+                                    resource.description,
+                                    resource.uriTemplate,
+                                    resource.mimeType
+                                ))
+                except Exception as eresources:
+                    list_error: bool = True
+
                 # client connected.
                 self.open = True
 
@@ -306,6 +323,23 @@ class McpClient:
                                     resource.name,
                                     resource.description,
                                     resource.uri,
+                                    resource.mimeType
+                                ))
+                except Exception as eresources:
+                    list_error: bool = True
+
+                try:
+                    # load all resources.
+                    resourcesResultTemplates = await self.session.list_resource_templates()
+                    if resourcesResultTemplates is not None:
+                        if resourcesResultTemplates.resourceTemplates is not None:
+                            for resource in resourcesResultTemplates.resourceTemplates:
+                                # create the resource model.
+                                self.resources.append(McpResource(
+                                    resource.name,
+                                    resource.name,
+                                    resource.description,
+                                    resource.uriTemplate,
                                     resource.mimeType
                                 ))
                 except Exception as eresources:

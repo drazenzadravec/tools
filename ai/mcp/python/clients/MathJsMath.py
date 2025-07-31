@@ -67,7 +67,7 @@ class MathJsMath(McpClient):
         # return the result.
         return res;
 
-    async def callMathJsDocsUrlVsersionResource(self, version: str) -> Union[Any, None]:
+    async def callMathJsDocsUrlVersionResource(self, version: str) -> Union[Any, None]:
         """
         call the MathJs documentation URL resource.
 
