@@ -54,6 +54,7 @@ class McpServerBase:
                                     instructions=instructions, 
                                     stateless_http=stateless, 
                                     json_response=True)
+        self.mcp._mcp_server.version = self.version
 
     def __repr__(self):
         return f"McpServerBase(name={self.name}, " \
