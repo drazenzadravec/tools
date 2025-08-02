@@ -2,10 +2,12 @@ import {
     Client
 } from "@modelcontextprotocol/sdk/client/index.js";
 import {
-    StdioClientTransport
+    StdioClientTransport,
+    StdioServerParameters
 } from "@modelcontextprotocol/sdk/client/stdio.js";
 import {
-    StreamableHTTPClientTransport
+    StreamableHTTPClientTransport,
+    StreamableHTTPClientTransportOptions
 } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
 
 import {
@@ -159,14 +161,23 @@ export class McpClient {
     async closeConnection(): Promise<void> {
         // if open.
         if (this.open) {
-            // close the mcp connection.
-            await this.mcp.close();
-            this.open = false;
 
             // init
             this.tools = [];
             this.prompts = [];
             this.resources = [];
+
+            try {
+                // close the mcp connection.
+                await this.mcp.close();
+
+            } catch (e) {
+                // some error on close.
+                let error = e;
+            } 
+
+            // closed
+            this.open = false;
         }
     }
 
@@ -206,92 +217,86 @@ export class McpClient {
 
                 // open a connection to the MCP server.
                 await this.mcp.connect(this.transport);
-                let list_error: boolean = false;
-
-                try {
-                    // load all tools.
-                    const toolsResult = await this.mcp.listTools();
-                    if (toolsResult !== null) {
-                        if (toolsResult.tools.length > 0) {
-                            this.tools = toolsResult.tools.map((tool) => {
-                                return {
-                                    name: tool.name,
-                                    title: tool.title,
-                                    description: tool.description,
-                                    inputSchema: tool.inputSchema,
-                                };
-                            });
-                        }
-                    }
-                } catch (etools) {
-                    list_error = true;
-                }
-                
-                try {
-                    // load all prompts.
-                    const promptsResult = await this.mcp.listPrompts();
-                    if (promptsResult !== null) {
-                        if (promptsResult.prompts.length > 0) {
-                            this.prompts = promptsResult.prompts.map((prompt) => {
-                                return {
-                                    name: prompt.name,
-                                    title: prompt.title,
-                                    description: prompt.description,
-                                    arguments: prompt.arguments
-                                };
-                            });
-                        }
-                    }
-                } catch (eprompts) {
-                    list_error = true;
-                }
-                
-                try {
-                    // load all resources.
-                    const resourcesResult = await this.mcp.listResources();
-                    if (resourcesResult !== null) {
-                        if (resourcesResult.resources.length > 0) {
-                            for (var i = 0; i < resourcesResult.resources.length; i++) {
-
-                                let resource = resourcesResult.resources[i];
-                                this.resources.push({
-                                    name: resource.name,
-                                    title: resource.title,
-                                    description: resource.description,
-                                    uri: resource.uri,
-                                    mimeType: resource.mimeType
-                                });
-                            }
-                        }
-                    }
-                } catch (eresources) {
-                    list_error = true;
-                }
-
-                try {
-                    // load all resources.
-                    const resourcesResultTemplates = await this.mcp.listResourceTemplates();
-                    if (resourcesResultTemplates !== null) {
-                        if (resourcesResultTemplates.resourceTemplates.length > 0) {
-                            for (var i = 0; i < resourcesResultTemplates.resourceTemplates.length; i++) {
-
-                                let resource = resourcesResultTemplates.resourceTemplates[i];
-                                this.resources.push({
-                                    name: resource.name,
-                                    title: resource.title,
-                                    description: resource.description,
-                                    uri: resource.uriTemplate,
-                                    mimeType: resource.mimeType
-                                });
-                            }
-                        }
-                    }
-                } catch (eresources) {
-                    list_error = true;
-                }
 
                 // connection open.
                 this.open = true;
+
+                // request.
+                await this.requestTools();
+                await this.requestPrompts();
+                await this.requestResources();
+
+            } catch (e) {
+                this.open = false;
+                throw e;
+            }
+        }
+    }
+
+    /**
+     * connect to the MCP server.
+     * start receiving messages on stdin and sending messages on stdout.
+     * @param {string} command  the executable to run to start the server.
+     * @param {Array<string>} argsList  command line arguments to pass to the executable.
+     * @param {Record<string, string>} envList  the environment to use when spawning the process.
+     */
+    async openConnectionStdioCustom(command: string, argsList?: Array<string>, envList?: Record<string, string>): Promise<void> {
+
+        // if not open.
+        if (!this.open) {
+            try {
+
+                // create the transport to the server
+                // using the command and arguments
+                this.transport = new StdioClientTransport({
+                    command,
+                    args: argsList,
+                    env: envList
+                });
+
+                // open a connection to the MCP server.
+                await this.mcp.connect(this.transport);
+
+                // connection open.
+                this.open = true;
+
+                // request.
+                await this.requestTools();
+                await this.requestPrompts();
+                await this.requestResources();
+
+            } catch (e) {
+                this.open = false;
+                throw e;
+            }
+        }
+    }
+
+    /**
+     * connect to the MCP server.
+     * start receiving messages on stdin and sending messages on stdout.
+     * @param {StdioServerParameters} server  stdio server parameters.
+     */
+    async openConnectionStdioServerParam(server: StdioServerParameters): Promise<void> {
+
+        // if not open.
+        if (!this.open) {
+            try {
+
+                // create the transport to the server
+                // using the command and arguments
+                this.transport = new StdioClientTransport(server);
+
+                // open a connection to the MCP server.
+                await this.mcp.connect(this.transport);
+
+                // connection open.
+                this.open = true;
+
+                // request.
+                await this.requestTools();
+                await this.requestPrompts();
+                await this.requestResources();
 
             } catch (e) {
                 this.open = false;
@@ -338,97 +343,190 @@ export class McpClient {
 
                 // open a connection to the MCP server.
                 await this.mcp.connect(this.httpTransport);
-                let list_error: boolean = false;
-
-                try {
-                    // load all tools.
-                    const toolsResult = await this.mcp.listTools();
-                    if (toolsResult !== null) {
-                        if (toolsResult.tools.length > 0) {
-                            this.tools = toolsResult.tools.map((tool) => {
-                                return {
-                                    name: tool.name,
-                                    title: tool.title,
-                                    description: tool.description,
-                                    inputSchema: tool.inputSchema,
-                                };
-                            });
-                        }
-                    }
-                } catch (etools) {
-                    list_error = true;
-                }
-
-                try {
-                    // load all prompts.
-                    const promptsResult = await this.mcp.listPrompts();
-                    if (promptsResult !== null) {
-                        if (promptsResult.prompts.length > 0) {
-                            this.prompts = promptsResult.prompts.map((prompt) => {
-                                return {
-                                    name: prompt.name,
-                                    title: prompt.title,
-                                    description: prompt.description,
-                                    arguments: prompt.arguments
-                                };
-                            });
-                        }
-                    }
-                } catch (eprompts) {
-                    list_error = true;
-                }
-
-                try {
-                    // load all resources.
-                    const resourcesResult = await this.mcp.listResources();
-                    if (resourcesResult !== null) {
-                        if (resourcesResult.resources.length > 0) {
-                            for (var i = 0; i < resourcesResult.resources.length; i++) {
-
-                                let resource = resourcesResult.resources[i];
-                                this.resources.push({
-                                    name: resource.name,
-                                    title: resource.title,
-                                    description: resource.description,
-                                    uri: resource.uri,
-                                    mimeType: resource.mimeType
-                                });
-                            }
-                        }
-                    }
-                } catch (eresources) {
-                    list_error = true;
-                }
-
-                try {
-                    // load all resources.
-                    const resourcesResultTemplates = await this.mcp.listResourceTemplates();
-                    if (resourcesResultTemplates !== null) {
-                        if (resourcesResultTemplates.resourceTemplates.length > 0) {
-                            for (var i = 0; i < resourcesResultTemplates.resourceTemplates.length; i++) {
-
-                                let resource = resourcesResultTemplates.resourceTemplates[i];
-                                this.resources.push({
-                                    name: resource.name,
-                                    title: resource.title,
-                                    description: resource.description,
-                                    uri: resource.uriTemplate,
-                                    mimeType: resource.mimeType
-                                });
-                            }
-                        }
-                    }
-                } catch (eresources) {
-                    list_error = true;
-                }
 
                 // connection open.
                 this.open = true;
+
+                // request.
+                await this.requestTools();
+                await this.requestPrompts();
+                await this.requestResources();
 
             } catch (e) {
                 this.open = false;
                 throw e;
             }
         }
+    }
+
+    /**
+     * connect to the MCP server.
+     * start receiving messages on streamable HTTP.
+     * For remote servers, set up a Streamable HTTP transport that handles 
+     * both client requests and server-to-client notifications.
+     * @param {string} serverUrl the server URL path.
+     * @param {StreamableHTTPClientTransportOptions} options customizes HTTP requests to the server.
+     * @example
+     *      serverUrl: "https://example.com/mcp",
+            requestInit: {
+                headers: { 'Authorization': 'Bearer <secret>'
+            }
+     * 
+     */
+    async openConnectionHttpCustom(serverUrl: string, options?: StreamableHTTPClientTransportOptions): Promise<void> {
+
+        // if not open.
+        if (!this.open) {
+            try {
+                const baseUrl = new URL(serverUrl);
+
+                // create the transport to the server
+                // using the command and arguments
+                this.httpTransport = new StreamableHTTPClientTransport(new URL(baseUrl), options);
+
+                // open a connection to the MCP server.
+                await this.mcp.connect(this.httpTransport);
+
+                // connection open.
+                this.open = true;
+
+                // request.
+                await this.requestTools();
+                await this.requestPrompts();
+                await this.requestResources();
+
+            } catch (e) {
+                this.open = false;
+                throw e;
+            }
+        }
+    }
+
+    /**
+     * request the tools list.
+     * @returns {boolean} true if list call succeeded: else false.
+     */
+    async requestTools(): Promise<boolean> {
+        let haslist: boolean = false;
+
+        // if open.
+        if (this.open) {
+            this.tools = [];
+
+            try {
+                // load all tools.
+                const toolsResult = await this.mcp.listTools();
+                if (toolsResult !== null) {
+                    if (toolsResult.tools.length > 0) {
+                        this.tools = toolsResult.tools.map((tool) => {
+                            return {
+                                name: tool.name,
+                                title: tool.title,
+                                description: tool.description,
+                                inputSchema: tool.inputSchema,
+                            };
+                        });
+                    }
+                }
+                haslist = true;
+            } catch (e) {
+                haslist = false;
+            }
+        }
+        return haslist;
+    }
+
+    /**
+     * request the prompts list.
+     * @returns {boolean} true if list call succeeded: else false.
+     */
+    async requestPrompts(): Promise<boolean> {
+        let haslist: boolean = false;
+
+        // if open.
+        if (this.open) {
+            this.prompts = [];
+
+            try {
+                // load all prompts.
+                const promptsResult = await this.mcp.listPrompts();
+                if (promptsResult !== null) {
+                    if (promptsResult.prompts.length > 0) {
+                        this.prompts = promptsResult.prompts.map((prompt) => {
+                            return {
+                                name: prompt.name,
+                                title: prompt.title,
+                                description: prompt.description,
+                                arguments: prompt.arguments
+                            };
+                        });
+                    }
+                }
+                haslist = true;
+            } catch (e) {
+                haslist = false;
+            }
+        }
+        return haslist;
+    }
+
+    /**
+     * request the resources list.
+     * @returns {boolean} true if list call succeeded: else false.
+     */
+    async requestResources(): Promise<boolean> {
+        let haslist: boolean = false;
+
+        // if open.
+        if (this.open) {
+            this.resources = [];
+
+            try {
+                // load all resources.
+                const resourcesResult = await this.mcp.listResources();
+                if (resourcesResult !== null) {
+                    if (resourcesResult.resources.length > 0) {
+                        for (var i = 0; i < resourcesResult.resources.length; i++) {
+
+                            let resource = resourcesResult.resources[i];
+                            this.resources.push({
+                                name: resource.name,
+                                title: resource.title,
+                                description: resource.description,
+                                uri: resource.uri,
+                                mimeType: resource.mimeType
+                            });
+                        }
+                    }
+                }
+                haslist = true;
+            } catch (e) {
+                haslist = false;
+            }
+
+            try {
+                // load all resources.
+                const resourcesResultTemplates = await this.mcp.listResourceTemplates();
+                if (resourcesResultTemplates !== null) {
+                    if (resourcesResultTemplates.resourceTemplates.length > 0) {
+                        for (var i = 0; i < resourcesResultTemplates.resourceTemplates.length; i++) {
+
+                            let resource = resourcesResultTemplates.resourceTemplates[i];
+                            this.resources.push({
+                                name: resource.name,
+                                title: resource.title,
+                                description: resource.description,
+                                uri: resource.uriTemplate,
+                                mimeType: resource.mimeType
+                            });
+                        }
+                    }
+                }
+                haslist = true;
+            } catch (e) {
+                haslist = false;
+            }
+        }
+        return haslist;
     }
 }
