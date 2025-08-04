@@ -34,7 +34,7 @@ export class MathJsMath extends McpServerBase {
             {
                 description: "Use MathJS to execute the mathematical expressions",
                 inputSchema: {
-                    expression: z.string()
+                    expression: z.string().describe("the MathJs mathematical expression")
                 }
             },
             async ({ expression }) => ({
@@ -57,7 +57,7 @@ export class MathJsMath extends McpServerBase {
             {
                 description: "Use MathJS to execute the mathematical expressions",
                 argsSchema: {
-                    expression: z.string()
+                    expression: z.string().describe("the MathJs mathematical expression")
                 }
             },
             async ({ expression }) => ({
@@ -83,7 +83,7 @@ export class MathJsMath extends McpServerBase {
             {
                 description: "Describe the expression result.",
                 argsSchema: {
-                    result: z.string()
+                    result: z.string().describe("the expression result")
                 }
             },
             async ({ result }) => ({
