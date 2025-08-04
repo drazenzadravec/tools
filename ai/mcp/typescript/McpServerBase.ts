@@ -500,8 +500,14 @@ export class McpServerBase {
             this.promptsCallback = [];
             this.resourcesCallback = [];
 
-            // close the mcp connection.
-            await this.mcp.close();
+            try {
+                // close the mcp connection.
+                await this.mcp.close();
+
+            } catch (e) {
+                // some error on close.
+                let error = e;
+            } 
             this.open = false;
         }
     }
