@@ -3,6 +3,7 @@ from sympy import sympify
 
 from typing import Optional, Any, List, Union, Callable, Awaitable
 
+from mcp.types import ToolAnnotations
 from mcp.server.fastmcp import FastMCP
 from mcp.server.fastmcp.prompts.base import PromptArgument, Message, TextContent
 
@@ -15,7 +16,7 @@ class SymPyMath(McpServerBase):
     SymPy math expression evaluator.
     """
     def __init__(self):
-        super().__init__("SymPyMathExpression", "1.0.1", "SymPy math expression evaluator", 
+        super().__init__("SymPyMathExpression", "1.2.1", "SymPy math expression evaluator", 
                          dict( resources={}, tools={}, prompts={}))
 
     def registerTool_MathExpressionEvaluator(self) -> bool:
@@ -25,10 +26,26 @@ class SymPyMath(McpServerBase):
         Return:
             true if tool registered; else false.
         """
-        return self.registerTool(
+        result: bool = self.registerTool(
             "MathExpressionEvaluator", 
             self.mathExpressionEvaluator,
             "Use SymPy to execute the mathematical expressions")
+
+        # if added
+        if (result):
+            # set parameters
+            self.setToolParameters("MathExpressionEvaluator", {
+                "type": "object",
+                "properties": {
+                    "expression": {
+                        "type": "string",
+                        "description": "the SymPy mathematical expression"
+                    }
+                },
+                "required": ["expression"],
+                "additionalProperties": False
+            })
+        return result;
 
     def registerPrompt_MathExpressionEvaluator(self) -> bool:
         """

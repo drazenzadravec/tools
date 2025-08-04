@@ -1,10 +1,11 @@
 from contextlib import asynccontextmanager
 from collections.abc import AsyncIterator
 
-from pydantic import AnyUrl, TypeAdapter
+from pydantic import AnyUrl, TypeAdapter, BaseModel, Field
 from typing import Optional, Any, List, Union, Callable, Awaitable
 
 from mcp.server.fastmcp import FastMCP
+from mcp.server.fastmcp.tools.base import Tool
 from mcp.server.fastmcp.resources import Resource, ResourceTemplate
 from mcp.server.fastmcp.resources.types import FunctionResource
 from mcp.server.fastmcp.prompts.base import Prompt, PromptArgument, PromptResult
@@ -259,6 +260,30 @@ class McpServerBase:
             raise
 
         return result
+
+    def setToolParameters(self, name: str, parameters: dict[str, Any] = Field(description="JSON schema for tool parameters")) -> None:
+        """
+        set the tool parameters
+
+        Args:
+            name:  the name of the tool
+            parameters: JSON schema for tool parameters
+
+        Example:
+        {
+            "type": "object",
+            "properties": {
+                "expression": {
+                    "type": "string",
+                    "description": "the mathematical expression"
+                }
+            },
+            "required": ["expression"],
+            "additionalProperties": False
+        }
+        """
+        tool: Tool = self.mcp._tool_manager.get_tool(name)
+        tool.parameters = parameters
 
     async def getTools(self) -> List[McpTool]:
         """
