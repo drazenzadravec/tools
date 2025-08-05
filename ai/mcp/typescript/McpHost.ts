@@ -1,5 +1,6 @@
 import { McpClient } from './McpClient.js'
 import { McpServerBase } from './McpServerBase.js'
+import { McpTool } from './McpTypes.js'
 
 /**
  * mcp client model.
@@ -18,6 +19,19 @@ export interface McpServerModel {
 }
 
 /**
+ * mcp function tool
+ */
+export interface McpFunctionTool {
+    clientId: string;
+    serverId: string;
+    type: string;
+    name: string;
+    description?: string | null;
+    strict: boolean;
+    parameters: Record<string, unknown>;
+}
+
+/**
  * Model context protocol host.
  */
 export class McpHost {
@@ -25,6 +39,7 @@ export class McpHost {
     // global.
     private mcpClients: Array<McpClientModel>;
     private mcpServers: Array<McpServerModel>;
+    private mcpFunctionTools: Array<McpFunctionTool>;
 
     /**
      * Model context protocol host.
@@ -34,6 +49,7 @@ export class McpHost {
         // init
         this.mcpClients = [];
         this.mcpServers = [];
+        this.mcpFunctionTools = [];
     }
 
     /**
@@ -50,6 +66,14 @@ export class McpHost {
      */
     getServers(): Array<McpServerModel> {
         return this.mcpServers;
+    }
+
+    /**
+     * get the list of function tools
+     * @returns {Array<McpFunctionTool>} list of function tools
+     */
+    getFunctionTools(): Array<McpFunctionTool> {
+        return this.mcpFunctionTools;
     }
 
     /**
@@ -79,6 +103,25 @@ export class McpHost {
     }
 
     /**
+     * add an MCP function tool.
+     * @param {McpTool} tool    the mcp tool.
+     * @param {string} clientId    the mcp client Id.
+     * @param {string} serverId    the mcp server Id.
+     */
+    addFunctionTool(tool: McpTool, clientId: string, serverId: string): void {
+        // add a new function tool.
+        this.mcpFunctionTools.push({
+            clientId: clientId,
+            serverId: serverId,
+            type: "function",
+            name: tool.name,
+            description: tool.description,
+            strict: true,
+            parameters: tool.inputSchema
+        });
+    }
+
+    /**
      * find an MCP client.
      * @param {string} id   the unique id.
      * @returns {McpClientModel} the mcp client
@@ -97,6 +140,17 @@ export class McpHost {
     findServer(id: string): McpServerModel | null {
         return this.mcpServers.find(function (item) {
             return (item.id === id || item.id === id);
+        })
+    }
+
+    /**
+     * find an MCP function tool.
+     * @param {string} name   the unique name.
+     * @returns {McpFunctionTool} the mcp function tool
+     */
+    findFunctionTool(name: string): McpFunctionTool | null {
+        return this.mcpFunctionTools.find(function (item) {
+            return (item.name === name || item.name === name);
         })
     }
 }
