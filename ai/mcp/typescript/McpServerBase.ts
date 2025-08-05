@@ -17,6 +17,7 @@ import { randomUUID } from "node:crypto";
 
 import {
     McpTool,
+    McpToolParameters,
     McpPrompt,
     McpResource,
     McpToolCallback,
@@ -159,7 +160,8 @@ export class McpServerBase {
             outputSchema?: any;
             annotations?: any;
         },
-        callback: any
+        callback: any,
+        parameters?: McpToolParameters
     ): boolean {
         let result: boolean = false;
         try {
@@ -180,7 +182,8 @@ export class McpServerBase {
                 name: name,
                 title: config.title,
                 description: config.description,
-                inputSchema: config.inputSchema
+                inputSchema: config.inputSchema,
+                parameters: parameters
             });
             this.toolsCallback.push({
                 name: name,

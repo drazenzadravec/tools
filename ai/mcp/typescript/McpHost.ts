@@ -1,6 +1,6 @@
 import { McpClient } from './McpClient.js'
 import { McpServerBase } from './McpServerBase.js'
-import { McpTool } from './McpTypes.js'
+import { McpTool, McpFunctionTool } from './McpTypes.js'
 
 /**
  * mcp client model.
@@ -16,19 +16,6 @@ export interface McpClientModel {
 export interface McpServerModel {
     id: string;
     server: McpServerBase;
-}
-
-/**
- * mcp function tool
- */
-export interface McpFunctionTool {
-    clientId: string;
-    serverId: string;
-    type: string;
-    name: string;
-    description?: string | null;
-    strict: boolean;
-    parameters: Record<string, unknown>;
 }
 
 /**
@@ -117,7 +104,8 @@ export class McpHost {
             name: tool.name,
             description: tool.description,
             strict: true,
-            parameters: tool.inputSchema
+            inputSchema: tool.inputSchema,
+            parameters: tool.parameters
         });
     }
 

@@ -21,6 +21,17 @@ export interface McpTool {
     "title"?: string;
     "description"?: string;
     "inputSchema"?: any;
+    "parameters"?: McpToolParameters;
+}
+
+/**
+ * Model context protocol tool parameters. 
+ */
+export interface McpToolParameters {
+    "properties"?: any;
+    "required"?: Array<string>;
+    "type"?: string;
+    "additionalProperties"?: boolean;
 }
 
 /**
@@ -82,4 +93,18 @@ export interface McpResourceCallback {
 export interface McpHttpTransportModel {
     sessionId: string;
     transport: StreamableHTTPServerTransport;
+}
+
+/**
+ * mcp function tool
+ */
+export interface McpFunctionTool {
+    clientId: string;
+    serverId: string;
+    type: string;
+    name: string;
+    description?: string | null;
+    strict: boolean;
+    inputSchema?: Record<string, unknown>;
+    parameters?: McpToolParameters;
 }

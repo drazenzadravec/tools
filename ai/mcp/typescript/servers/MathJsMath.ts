@@ -42,7 +42,16 @@ export class MathJsMath extends McpServerBase {
                     type: "text",
                     text: localThis.mathExpressionEvaluator(expression)
                 }]
-            })
+            }),
+            {
+                properties: {
+                    expression: {
+                        type: 'string',
+                        description: 'the MathJs mathematical expression'
+                    }
+                },
+                required: ['expression'],
+            }
         );
     }
 

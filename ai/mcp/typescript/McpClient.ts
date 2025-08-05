@@ -424,6 +424,12 @@ export class McpClient {
                                 title: tool.title,
                                 description: tool.description,
                                 inputSchema: tool.inputSchema,
+                                parameters: {
+                                    additionalProperties: false,
+                                    type: "object",
+                                    required: [],
+                                    properties: tool.inputSchema
+                                }
                             };
                         });
                     }
