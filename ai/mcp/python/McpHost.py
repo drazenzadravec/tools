@@ -2,7 +2,7 @@ from typing import Optional, Any, List, Union, Dict
 
 from .McpClient import McpClient
 from .McpServerBase import McpServerBase
-from .McpTypes import McpTool
+from .McpTypes import McpTool, McpFunctionTool
 
 # Model context protocol client model.
 class McpClientModel:
@@ -33,36 +33,6 @@ class McpServerModel:
     def __repr__(self):
         return f"McpServerModel(id={self.id}, " \
             f"server={self.server})"
-
-# Model context protocol function tool.
-class McpFunctionTool:
-    """
-    Model context protocol function tool.
-    """
-    def __init__(self,
-                 clientId: str,
-                 serverId: str,
-                 type: str,
-                 name: str,
-                 description: str | None,
-                 strict: bool | None,
-                 parameters: Dict[str, object]):
-        self.clientId = clientId
-        self.serverId = serverId
-        self.type = type
-        self.name = name
-        self.description = description
-        self.strict = strict
-        self.parameters = parameters
-
-    def __repr__(self):
-        return f"McpFunctionTool(name={self.name}, " \
-            f"clientId={self.clientId}, " \
-            f"serverId={self.serverId}, " \
-            f"type={self.type}, " \
-            f"description={self.description}, " \
-            f"strict={self.strict}, " \
-            f"parameters={self.parameters})"
 
 # Model context protocol host.
 class McpHost:
@@ -144,7 +114,8 @@ class McpHost:
                 tool.name,
                 tool.description,
                 True,
-                tool.inputSchema
+                tool.inputSchema,
+                tool.parameters
             ))
 
     def findClient(self, id: str) -> McpClientModel | None:

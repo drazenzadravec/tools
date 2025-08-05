@@ -11,7 +11,7 @@ from mcp.server.fastmcp.resources.types import FunctionResource
 from mcp.server.fastmcp.prompts.base import Prompt, PromptArgument, PromptResult
 from mcp.server.fastmcp.resources.templates import ResourceTemplate
 
-from .McpTypes import McpTool, McpPrompt, McpResource
+from .McpTypes import McpTool, McpPrompt, McpResource, McpToolParameters
 
 # Model context protocol server base.
 class McpServerBase:
@@ -299,12 +299,20 @@ class McpServerBase:
             toolsResult = await self.mcp.list_tools()
             if toolsResult is not None:
                 for tool in toolsResult:
+                    
+                    # get base tool parameters.
+                    toolParm: Tool = self.mcp._tool_manager.get_tool(tool.name)
+                    parameters: dict[str, Any] | None = None
+                    if toolParm.parameters is not None:
+                        parameters = toolParm.parameters
+
                     # create the tool model.
                     tools.append(McpTool(
                         tool.name,
                         tool.name,
                         tool.description,
-                        tool.inputSchema
+                        tool.inputSchema,
+                        McpToolParameters(parameters)
                     ))
         except Exception as etools:
             list_error: bool = True

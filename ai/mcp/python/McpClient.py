@@ -8,7 +8,7 @@ from pydantic import AnyUrl, TypeAdapter
 from typing import Optional, Any, List, Union
 from contextlib import AsyncExitStack
 
-from .McpTypes import McpTool, McpPrompt, McpResource
+from .McpTypes import McpTool, McpPrompt, McpResource, McpToolParameters
 
 # Model context protocol client.
 class McpClient:
@@ -378,7 +378,8 @@ class McpClient:
                                 tool.name,
                                 tool.name,
                                 tool.description,
-                                tool.inputSchema
+                                tool.inputSchema,
+                                McpToolParameters(tool.inputSchema)
                             ))
 
                 haslist = True
