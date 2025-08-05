@@ -1,7 +1,8 @@
-from typing import Optional, Any, List, Union
+from typing import Optional, Any, List, Union, Dict
 
 from .McpClient import McpClient
 from .McpServerBase import McpServerBase
+from .McpTypes import McpTool
 
 # Model context protocol client model.
 class McpClientModel:
@@ -33,6 +34,36 @@ class McpServerModel:
         return f"McpServerModel(id={self.id}, " \
             f"server={self.server})"
 
+# Model context protocol function tool.
+class McpFunctionTool:
+    """
+    Model context protocol function tool.
+    """
+    def __init__(self,
+                 clientId: str,
+                 serverId: str,
+                 type: str,
+                 name: str,
+                 description: str | None,
+                 strict: bool | None,
+                 parameters: Dict[str, object]):
+        self.clientId = clientId
+        self.serverId = serverId
+        self.type = type
+        self.name = name
+        self.description = description
+        self.strict = strict
+        self.parameters = parameters
+
+    def __repr__(self):
+        return f"McpFunctionTool(name={self.name}, " \
+            f"clientId={self.clientId}, " \
+            f"serverId={self.serverId}, " \
+            f"type={self.type}, " \
+            f"description={self.description}, " \
+            f"strict={self.strict}, " \
+            f"parameters={self.parameters})"
+
 # Model context protocol host.
 class McpHost:
     """
@@ -42,6 +73,7 @@ class McpHost:
         # init
         self.mcpClients: List[McpClientModel] = [];
         self.mcpServers: List[McpServerModel] = [];
+        self.mcpFunctionTools: List[McpFunctionTool] = [];
 
     def getClients(self) -> List[McpClientModel]:
         """
@@ -60,6 +92,15 @@ class McpHost:
             list of servers
         """
         return self.mcpServers
+
+    def getFunctionTools(self) -> List[McpFunctionTool]:
+        """
+        get the list of function tools
+
+        Return:
+            list of function tools
+        """
+        return self.mcpFunctionTools
 
     def addClient(self, id: str, client: McpClient):
         """
@@ -85,6 +126,25 @@ class McpHost:
         self.mcpServers.append(McpServerModel(
                 id,
                 server
+            ))
+
+    def addFunctionTool(self, tool: McpTool, clientId: str, serverId: str):
+        """
+        add an MCP function tool.
+
+        Args:
+            tool: the mcp tool.
+            clientId: the mcp client Id.
+            serverId: the mcp server Id.
+        """
+        self.mcpFunctionTools.append(McpFunctionTool(
+                clientId,
+                serverId,
+                "function",
+                tool.name,
+                tool.description,
+                True,
+                tool.inputSchema
             ))
 
     def findClient(self, id: str) -> McpClientModel | None:
@@ -132,3 +192,26 @@ class McpHost:
 
         # return
         return serverModel
+
+    def findFunctionTool(self, name: str) -> McpFunctionTool | None:
+        """
+        find an MCP function tool.
+
+        Args:
+            name: the unique name.
+
+        Return:
+            the mcp function tool; else empty
+        """
+        found: bool = False
+        functionTool: McpFunctionTool = None
+
+        # for each
+        for tool in self.mcpFunctionTools:
+            if name == tool.name:
+                found = True
+                functionTool = tool
+                break
+
+        # return
+        return functionTool
