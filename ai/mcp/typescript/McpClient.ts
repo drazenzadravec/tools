@@ -168,6 +168,24 @@ export class McpClient {
             this.resources = [];
 
             try {
+                // close the mcp transport.
+                await this.transport.close();
+
+            } catch (e) {
+                // some error on close.
+                let error = e;
+            }
+
+            try {
+                // close the mcp transport.
+                await this.httpTransport.close();
+
+            } catch (e) {
+                // some error on close.
+                let error = e;
+            }
+
+            try {
                 // close the mcp connection.
                 await this.mcp.close();
 
@@ -426,9 +444,9 @@ export class McpClient {
                                 inputSchema: tool.inputSchema,
                                 parameters: {
                                     additionalProperties: false,
-                                    type: "object",
-                                    required: [],
-                                    properties: tool.inputSchema
+                                    type: tool.inputSchema.type,
+                                    required: tool.inputSchema.required,
+                                    properties: tool.inputSchema.properties
                                 }
                             };
                         });
