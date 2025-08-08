@@ -1,3 +1,4 @@
+from tkinter import NO
 from typing import Optional, Any, List, Union, Dict
 
 from .McpClient import McpClient
@@ -186,3 +187,70 @@ class McpHost:
 
         # return
         return functionTool
+
+    async def closeAll(self) -> None:
+        """
+        close all clients and servers.
+        """
+        self.closeServers()
+        await self.closeClients()
+
+    def closeServers(self) -> None:
+        """
+        close all servers.
+        """
+        # for each
+        for server in self.mcpServers:
+            try:
+                # close
+                server.server.stopServer();
+            except Exception as e:
+                valid: bool = False
+
+    async def closeClients(self) -> None:
+        """
+        close all clients.
+        """
+        # for each
+        for client in self.mcpClients:
+            try:
+                # close
+                await client.client.closeConnection()
+            except Exception as e:
+                valid: bool = False
+
+    async def addServerFunctionTools(self, id: str, mcpServer: McpServerBase) -> None:
+        """
+        add the server function tools.
+
+        Args:
+            id: the unique id.
+            mcpServer: the mcp server
+        """
+        # add each server.
+        self.addServer(id, mcpServer);
+
+        # add tools.
+        tools: List[McpTool] = await mcpServer.getTools();
+
+        # assign function
+        for tool in tools:
+            self.addFunctionTool(tool, "", id)
+
+    def addClientFunctionTools(self, id: str, mcpClient: McpClient) -> None:
+        """
+        add the client function tools.
+
+        Args:
+            id: the unique id.
+            mcpClient: the mcp client.
+        """
+        # add each client.
+        self.addClient(id, mcpClient)
+
+        # add tools.
+        tools: List[McpTool] = mcpClient.getTools()
+
+        # assign function
+        for tool in tools:
+            self.addFunctionTool(tool, id, "")
