@@ -141,4 +141,86 @@ export class McpHost {
             return (item.name === name || item.name === name);
         })
     }
+
+    /**
+    * close all clients and servers.
+    */
+    async closeAll(): Promise<void> {
+        await this.closeServers();
+        await this.closeClients();
+    }
+
+    /**
+    * close all servers.
+    */
+    async closeServers(): Promise<void> {
+
+        // for each mcp server.
+        for (var i = 0; i < this.mcpServers.length; i++) {
+            try {
+                // close.
+                await this.mcpServers[i].server.stopServer();
+            } catch (e) {
+                let error: any = e;
+            }
+        }
+    }
+
+    /**
+    * close all clients.
+    */
+    async closeClients(): Promise<void> {
+
+        // for each mcp client.
+        for (var i = 0; i < this.mcpClients.length; i++) {
+            try {
+                // close.
+                await this.mcpClients[i].client.closeConnection();
+            } catch (e) {
+                let error: any = e;
+            }
+        }
+    }
+
+    /**
+     * add the server function tools.
+     * @param {string} id     the unique id.
+     * @param {McpServerBase} mcpServer the mcp server
+     */
+    addServerFunctionTools(id: string, mcpServer: McpServerBase): void {
+
+        // add each server.
+        this.addServer(id, mcpServer);
+
+        // add tools.
+        let tools: McpTool[] = mcpServer.getTools();
+
+        // assign function
+        for (var i = 0; i < tools.length; i++) {
+            // add to tools
+            let tool: McpTool = tools[i];
+            this.addFunctionTool(tool, "", id);
+        }
+    }
+
+    /**
+    * add the client function tools.
+    * @param {string} id     the unique id.
+    * @param {McpClient} mcpClient the mcp client
+    */
+    addClientFunctionTools(id: string, mcpClient: McpClient): void {
+
+        // add each client.
+        this.addClient(id, mcpClient);
+
+        // add tools.
+        let tools: McpTool[] = mcpClient.getTools();
+
+        // assign function
+        for (var i = 0; i < tools.length; i++) {
+            // add to tools
+            let tool: McpTool = tools[i];
+            this.addFunctionTool(tool, id, "");
+        }
+    }
 }
