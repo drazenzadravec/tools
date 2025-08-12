@@ -28,6 +28,9 @@ export class McpHost {
     private mcpServers: Array<McpServerModel>;
     private mcpFunctionTools: Array<McpFunctionTool>;
 
+    // event logging function.
+    private logEvent: (eventType: string, name: string, message: string, details: any) => void;
+
     /**
      * Model context protocol host.
      */
@@ -37,6 +40,17 @@ export class McpHost {
         this.mcpClients = [];
         this.mcpServers = [];
         this.mcpFunctionTools = [];
+        this.logEvent = null;
+    }
+
+    /**
+     * Subscribe to the on event.
+     *
+     * @param {function}	event callback(eventType, name, message, details).
+     */
+    onEvent(event: (eventType: string, name: string, message: string, details: any) => void): void {
+        // assign the event.
+        this.logEvent = event;
     }
 
     /**
@@ -148,6 +162,12 @@ export class McpHost {
     async closeAll(): Promise<void> {
         await this.closeServers();
         await this.closeClients();
+
+        this.mcpClients = [];
+        this.mcpServers = [];
+        this.mcpFunctionTools = [];
+
+        this.logEvent = null;
     }
 
     /**
@@ -161,7 +181,7 @@ export class McpHost {
                 // close.
                 await this.mcpServers[i].server.stopServer();
             } catch (e) {
-                let error: any = e;
+                if (this.logEvent) this.logEvent("error", "close", "close server", e);
             }
         }
     }
@@ -177,7 +197,7 @@ export class McpHost {
                 // close.
                 await this.mcpClients[i].client.closeConnection();
             } catch (e) {
-                let error: any = e;
+                if (this.logEvent) this.logEvent("error", "close", "close client", e);
             }
         }
     }

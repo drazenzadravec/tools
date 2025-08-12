@@ -43,6 +43,9 @@ export class McpServerBase {
     private promptsCallback: Array<McpPromptCallback>;
     private resourcesCallback: Array<McpResourceCallback>;
 
+    // event logging function.
+    private logEvent: (eventType: string, name: string, message: string, details: any) => void;
+
     /**
      * Model context protocol server base.
      * @param {string} name     server name.
@@ -88,6 +91,17 @@ export class McpServerBase {
         this.toolsCallback = [];
         this.promptsCallback = [];
         this.resourcesCallback = [];
+        this.logEvent = null;
+    }
+
+    /**
+     * Subscribe to the on event.
+     *
+     * @param {function}	event callback(eventType, name, message, details).
+     */
+    onEvent(event: (eventType: string, name: string, message: string, details: any) => void): void {
+        // assign the event.
+        this.logEvent = event;
     }
 
     /**
@@ -191,7 +205,8 @@ export class McpServerBase {
             });
             result = true;
         } catch (e) {
-            throw e;
+            if (this.logEvent) this.logEvent("error", "tools", "register tool", e);
+            //throw e;
         }
         return result;
     }
@@ -256,7 +271,8 @@ export class McpServerBase {
             });
             result = true;
         } catch (e) {
-            throw e;
+            if (this.logEvent) this.logEvent("error", "resources", "register resource", e);
+            //throw e;
         }
         return result;
     }
@@ -321,7 +337,8 @@ export class McpServerBase {
             });
             result = true;
         } catch (e) {
-            throw e;
+            if (this.logEvent) this.logEvent("error", "resource_templates", "register resource template", e);
+            //throw e;
         }
         return result;
     }
@@ -384,7 +401,8 @@ export class McpServerBase {
             });
             result = true;
         } catch (e) {
-            throw e;
+            if (this.logEvent) this.logEvent("error", "prompts", "register prompt", e);
+            //throw e;
         }
         return result;
     }
@@ -488,7 +506,7 @@ export class McpServerBase {
                     // close the transport.
                     this.httpTransports[i].transport.close();
                 } catch (e) {
-                    var error = e;
+                    if (this.logEvent) this.logEvent("error", "close", "stop http transport", e);
                 }
             }
 
@@ -509,9 +527,11 @@ export class McpServerBase {
 
             } catch (e) {
                 // some error on close.
-                let error = e;
+                if (this.logEvent) this.logEvent("error", "close", "stop server", e);
             } 
+
             this.open = false;
+            this.logEvent = null;
         }
     }
 
@@ -534,7 +554,8 @@ export class McpServerBase {
 
             } catch (e) {
                 this.open = false;
-                throw e;
+                if (this.logEvent) this.logEvent("error", "start", "start server stdio", e);
+                //throw e;
             }
         }
     }
@@ -583,7 +604,9 @@ export class McpServerBase {
                                     }
                                 }
                             }
-                            catch (e) { }
+                            catch (e) {
+                                if (this.logEvent) this.logEvent("error", "start", "start server http", e);
+                            }
                         }
                     };
 
@@ -612,7 +635,8 @@ export class McpServerBase {
 
             } catch (e) {
                 this.open = false;
-                throw e;
+                if (this.logEvent) this.logEvent("error", "start", "start server http", e);
+                //throw e;
             }
         }
     }

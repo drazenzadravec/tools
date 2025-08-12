@@ -30,6 +30,9 @@ export class McpClient {
     private prompts: Array<McpPrompt>;
     private resources: Array<McpResource>;
 
+    // event logging function.
+    private logEvent: (eventType: string, name: string, message: string, details: any) => void;
+
     /**
      * Model context protocol client.
      * @param {string} name     client name.
@@ -52,6 +55,17 @@ export class McpClient {
         this.tools = [];
         this.prompts = [];
         this.resources = [];
+        this.logEvent = null;
+    }
+
+    /**
+     * Subscribe to the on event.
+     *
+     * @param {function}	event callback(eventType, name, message, details).
+     */
+    onEvent(event: (eventType: string, name: string, message: string, details: any) => void): void {
+        // assign the event.
+        this.logEvent = event;
     }
 
     /**
@@ -173,7 +187,7 @@ export class McpClient {
 
             } catch (e) {
                 // some error on close.
-                let error = e;
+                if (this.logEvent) this.logEvent("error", "transport", "transport close", e);
             }
 
             try {
@@ -182,7 +196,7 @@ export class McpClient {
 
             } catch (e) {
                 // some error on close.
-                let error = e;
+                if (this.logEvent) this.logEvent("error", "httptransport", "http transport close", e);
             }
 
             try {
@@ -191,11 +205,12 @@ export class McpClient {
 
             } catch (e) {
                 // some error on close.
-                let error = e;
+                if (this.logEvent) this.logEvent("error", "mcpclient", "client close", e);
             } 
 
             // closed
             this.open = false;
+            this.logEvent = null;
         }
     }
 
@@ -246,7 +261,8 @@ export class McpClient {
 
             } catch (e) {
                 this.open = false;
-                throw e;
+                if (this.logEvent) this.logEvent("error", "open", "open connection stdio", e);
+                //throw e;
             }
         }
     }
@@ -285,7 +301,8 @@ export class McpClient {
 
             } catch (e) {
                 this.open = false;
-                throw e;
+                if (this.logEvent) this.logEvent("error", "open", "open connection stdio custom", e);
+                //throw e;
             }
         }
     }
@@ -318,7 +335,8 @@ export class McpClient {
 
             } catch (e) {
                 this.open = false;
-                throw e;
+                if (this.logEvent) this.logEvent("error", "open", "open connection stdio server param", e);
+                //throw e;
             }
         }
     }
@@ -372,7 +390,8 @@ export class McpClient {
 
             } catch (e) {
                 this.open = false;
-                throw e;
+                if (this.logEvent) this.logEvent("error", "open", "open connection http", e);
+                //throw e;
             }
         }
     }
@@ -415,7 +434,8 @@ export class McpClient {
 
             } catch (e) {
                 this.open = false;
-                throw e;
+                if (this.logEvent) this.logEvent("error", "open", "open connection http custom", e);
+                //throw e;
             }
         }
     }
@@ -455,6 +475,7 @@ export class McpClient {
                 haslist = true;
             } catch (e) {
                 haslist = false;
+                if (this.logEvent) this.logEvent("error", "tools", "request tools", e);
             }
         }
         return haslist;
@@ -489,6 +510,7 @@ export class McpClient {
                 haslist = true;
             } catch (e) {
                 haslist = false;
+                if (this.logEvent) this.logEvent("error", "prompts", "request prompts", e);
             }
         }
         return haslist;
@@ -526,6 +548,7 @@ export class McpClient {
                 haslist = true;
             } catch (e) {
                 haslist = false;
+                if (this.logEvent) this.logEvent("error", "resources", "request resources", e);
             }
 
             try {
@@ -549,6 +572,7 @@ export class McpClient {
                 haslist = true;
             } catch (e) {
                 haslist = false;
+                if (this.logEvent) this.logEvent("error", "resources_templates", "request resource templates", e);
             }
         }
         return haslist;
