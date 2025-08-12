@@ -5,7 +5,7 @@ from mcp.client.stdio import stdio_client
 from mcp.client.streamable_http import streamablehttp_client
 
 from pydantic import AnyUrl, TypeAdapter
-from typing import Optional, Any, List, Union
+from typing import Optional, Any, List, Union, Callable, Dict
 from contextlib import AsyncExitStack
 
 from .McpTypes import McpTool, McpPrompt, McpResource, McpToolParameters
@@ -17,6 +17,7 @@ class McpClient:
     """
     def __init__(self):
         self.open = False
+        self.logEvent: Callable[[str, str, str, Any], None] | None = None
 
         # Initialize session and client objects
         self.session: Optional[ClientSession] = None
@@ -26,6 +27,14 @@ class McpClient:
         self.tools: List[McpTool] = [];
         self.prompts: List[McpPrompt] = [];
         self.resources: List[McpResource] = [];
+
+    def onEvent(self, event: Callable[[str, str, str, Any], None]) -> None:
+        """
+        subscribe to the on event.
+        Args:
+            event:   the log event handler.
+        """
+        self.logEvent = event
 
     def isConnected(self) -> bool:
         """
@@ -63,7 +72,7 @@ class McpClient:
         """
         return self.resources
 
-    async def callTool(self, name: str, args: dict[str, Any] | None = None) -> Union[Any, None]:
+    async def callTool(self, name: str, args: Dict[str, Any] | None = None) -> Any | None:
         """
         call the tool.
 
@@ -80,7 +89,7 @@ class McpClient:
         else:
             return None
 
-    async def callPrompt(self, name: str, args: dict[str, str] | None = None) -> Union[Any, None]:
+    async def callPrompt(self, name: str, args: Dict[str, str] | None = None) -> Any | None:
         """
         read the resource.
 
@@ -97,7 +106,7 @@ class McpClient:
         else:
             return None
 
-    async def callResource(self, uri: AnyUrl) -> Union[Any, None]:
+    async def callResource(self, uri: AnyUrl) -> Any | None:
         """
         read the resource.
 
@@ -129,9 +138,11 @@ class McpClient:
                 # close the stack.
                 await self.exit_stack.aclose()
             except Exception as e:
-                valid: bool = False
+                if (self.logEvent):
+                    self.logEvent("error", "mcpclient", "client close", e)
 
             # closed
+            self.logEvent = None
             self.open = False
 
     async def openConnectionStdio(self, serverScriptPath: str):
@@ -181,9 +192,11 @@ class McpClient:
 
             except Exception as e:
                 self.open = False
-                raise  # Re-throws the same exception
+                if (self.logEvent):
+                    self.logEvent("error", "open", "open connection stdio", e)
+                #raise  # Re-throws the same exception
 
-    async def openConnectionStdioCustom(self, command: str, argsList: List[str] | None = None, envList: dict[str, str] | None = None):
+    async def openConnectionStdioCustom(self, command: str, argsList: List[str] | None = None, envList: Dict[str, str] | None = None):
         """
         connect to the MCP server.
         start receiving messages on stdin and sending messages on stdout.
@@ -223,7 +236,9 @@ class McpClient:
 
             except Exception as e:
                 self.open = False
-                raise  # Re-throws the same exception
+                if (self.logEvent):
+                    self.logEvent("error", "open", "open connection stdio custom", e)
+                #raise  # Re-throws the same exception
 
     async def openConnectionStdioServerParam(self, server: StdioServerParameters):
         """
@@ -256,9 +271,11 @@ class McpClient:
 
             except Exception as e:
                 self.open = False
-                raise  # Re-throws the same exception
+                if (self.logEvent):
+                    self.logEvent("error", "open", "open connection stdio server param", e)
+                #raise  # Re-throws the same exception
 
-    async def openConnectionHttp(self, serverUrl: str, requestInit: dict[str, str] | None = None):
+    async def openConnectionHttp(self, serverUrl: str, requestInit: Dict[str, str] | None = None):
         """
         connect to the MCP server.
         start receiving messages on streamable HTTP.
@@ -305,9 +322,11 @@ class McpClient:
                 
             except Exception as e:
                 self.open = False
-                raise  # Re-throws the same exception
+                if (self.logEvent):
+                    self.logEvent("error", "open", "open connection http", e)
+                #raise  # Re-throws the same exception
 
-    async def openConnectionHttpCustom(self, serverUrl: str, headers: dict[str, str] | None = None, auth: httpx.Auth | None = None):
+    async def openConnectionHttpCustom(self, serverUrl: str, headers: Dict[str, str] | None = None, auth: httpx.Auth | None = None):
         """
         connect to the MCP server.
         start receiving messages on streamable HTTP.
@@ -352,7 +371,9 @@ class McpClient:
                 
             except Exception as e:
                 self.open = False
-                raise  # Re-throws the same exception
+                if (self.logEvent):
+                    self.logEvent("error", "open", "open connection http custom", e)
+                #raise  # Re-throws the same exception
 
     async def requestTools(self) -> bool:
         """
@@ -383,8 +404,10 @@ class McpClient:
                             ))
 
                 haslist = True
-            except Exception as etools:
+            except Exception as e:
                 haslist = False
+                if (self.logEvent):
+                    self.logEvent("error", "tools", "request tools", e)
 
         return haslist
 
@@ -416,8 +439,10 @@ class McpClient:
                             ))
 
                 haslist = True
-            except Exception as eprompts:
+            except Exception as e:
                 haslist = False
+                if (self.logEvent):
+                    self.logEvent("error", "prompts", "request prompts", e)
 
         return haslist
 
@@ -450,8 +475,10 @@ class McpClient:
                             ))
 
                 haslist = True
-            except Exception as eresources:
+            except Exception as e:
                 haslist = False
+                if (self.logEvent):
+                    self.logEvent("error", "resources", "request resources", e)
 
             try:
                 # load all resources.
@@ -469,7 +496,9 @@ class McpClient:
                             ))
 
                 haslist = True
-            except Exception as eresources:
+            except Exception as e:
                 haslist = False
+                if (self.logEvent):
+                    self.logEvent("error", "resources_templates", "request resource templates", e)
         
         return haslist

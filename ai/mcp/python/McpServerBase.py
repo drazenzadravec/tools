@@ -2,11 +2,11 @@ from contextlib import asynccontextmanager
 from collections.abc import AsyncIterator
 
 from pydantic import AnyUrl, TypeAdapter, BaseModel, Field
-from typing import Optional, Any, List, Union, Callable, Awaitable
+from typing import Optional, Any, List, Union, Callable, Awaitable, Dict
 
 from mcp.server.fastmcp import FastMCP
 from mcp.server.fastmcp.tools.base import Tool
-from mcp.server.fastmcp.resources import Resource, ResourceTemplate
+from mcp.server.fastmcp.resources import Resource
 from mcp.server.fastmcp.resources.types import FunctionResource
 from mcp.server.fastmcp.prompts.base import Prompt, PromptArgument, PromptResult
 from mcp.server.fastmcp.resources.templates import ResourceTemplate
@@ -43,6 +43,7 @@ class McpServerBase:
             }
         """
         self.open = False
+        self.logEvent: Callable[[str, str, str, Any], None] | None = None
 
         self.name = name
         self.version = version
@@ -63,6 +64,13 @@ class McpServerBase:
             f"stateless={self.stateless}, " \
             f"version={self.version})"
 
+    def onEvent(self, event: Callable[[str, str, str, Any], None]) -> None:
+        """
+        subscribe to the on event.
+        Args:
+            event:   the log event handler.
+        """
+        self.logEvent = event
 
     def hasStarted(self) -> bool:
         """
@@ -114,7 +122,9 @@ class McpServerBase:
             self.mcp.add_tool(callback, name, description, annotations)
             result = True
         except Exception as e:
-            raise
+            if (self.logEvent):
+                self.logEvent("error", "tools", "register tool", e)
+            #raise
 
         return result
 
@@ -164,7 +174,9 @@ class McpServerBase:
             self.mcp.add_resource(functionResource)
             result = True
         except Exception as e:
-            raise
+            if (self.logEvent):
+                self.logEvent("error", "resources", "register resource", e)
+            #raise
 
         return result
 
@@ -206,7 +218,9 @@ class McpServerBase:
                 callback, uri, name, description, mimeType)
             result = True
         except Exception as e:
-            raise
+            if (self.logEvent):
+                self.logEvent("error", "resource_templates", "register resource template", e)
+            #raise
 
         return result
 
@@ -257,11 +271,13 @@ class McpServerBase:
             ))
             result = True
         except Exception as e:
-            raise
+            if (self.logEvent):
+                self.logEvent("error", "prompts", "register prompt", e)
+            #raise
 
         return result
 
-    def setToolParameters(self, name: str, parameters: dict[str, Any] = Field(description="JSON schema for tool parameters")) -> None:
+    def setToolParameters(self, name: str, parameters: Dict[str, Any] = Field(description="JSON schema for tool parameters")) -> None:
         """
         set the tool parameters
 
@@ -302,7 +318,7 @@ class McpServerBase:
                     
                     # get base tool parameters.
                     toolParm: Tool = self.mcp._tool_manager.get_tool(tool.name)
-                    parameters: dict[str, Any] | None = None
+                    parameters: Dict[str, Any] | None = None
                     if toolParm.parameters is not None:
                         parameters = toolParm.parameters
 
@@ -314,8 +330,9 @@ class McpServerBase:
                         tool.inputSchema,
                         McpToolParameters(parameters)
                     ))
-        except Exception as etools:
-            list_error: bool = True
+        except Exception as e:
+            if (self.logEvent):
+                self.logEvent("error", "tools", "get tools", e)
         
         return tools
 
@@ -340,8 +357,9 @@ class McpServerBase:
                         prompt.description,
                         prompt.arguments
                     ))
-        except Exception as eprompts:
-            list_error: bool = True
+        except Exception as e:
+            if (self.logEvent):
+                self.logEvent("error", "prompts", "get prompts", e)
 
         return prompts
 
@@ -367,8 +385,9 @@ class McpServerBase:
                         resource.uri,
                         resource.mimeType
                     ))
-        except Exception as eresources:
-            list_error: bool = True
+        except Exception as e:
+            if (self.logEvent):
+                self.logEvent("error", "resources", "get resources", e)
 
         try:
             # load all resources.
@@ -383,12 +402,13 @@ class McpServerBase:
                         resourceTemplate.uriTemplate,
                         resourceTemplate.mimeType
                     ))
-        except Exception as eresources:
-            list_error: bool = True
+        except Exception as e:
+            if (self.logEvent):
+                self.logEvent("error", "resource_templates", "get resource templates", e)
 
         return resources
 
-    async def callTool(self, name: str, args: dict[str, Any] | None = None) -> Union[Any, None]:
+    async def callTool(self, name: str, args: Dict[str, Any] | None = None) -> Any | None:
         """
         call the tool.
 
@@ -401,7 +421,7 @@ class McpServerBase:
         """
         return await self.mcp.call_tool(name, arguments = args)
 
-    async def callPrompt(self, name: str, args: dict[str, str] | None = None) -> Union[Any, None]:
+    async def callPrompt(self, name: str, args: Dict[str, str] | None = None) -> Any | None:
         """
         read the resource.
 
@@ -414,7 +434,7 @@ class McpServerBase:
         """
         return await self.mcp.get_prompt(name, arguments = args)
 
-    async def callResource(self, uri: AnyUrl) -> Union[Any, None]:
+    async def callResource(self, uri: AnyUrl) -> Any | None:
         """
         read the resource.
 
@@ -433,6 +453,7 @@ class McpServerBase:
         # if open.
         if self.open:
             self.mcp = None
+            self.logEvent = None
             self.open = False
 
     def startServerStdio(self):
@@ -452,7 +473,9 @@ class McpServerBase:
 
             except Exception as e:
                 self.open = False
-                raise  # Re-throws the same exception
+                if (self.logEvent):
+                    self.logEvent("error", "start", "start server stdio", e)
+                #raise  # Re-throws the same exception
 
     def startServerHttp(self):
         """
@@ -472,4 +495,6 @@ class McpServerBase:
 
             except Exception as e:
                 self.open = False
-                raise  # Re-throws the same exception
+                if (self.logEvent):
+                    self.logEvent("error", "start", "start server http", e)
+                #raise  # Re-throws the same exception

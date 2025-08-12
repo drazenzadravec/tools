@@ -1,5 +1,5 @@
 from tkinter import NO
-from typing import Optional, Any, List, Union, Dict
+from typing import Optional, Any, List, Union, Dict, Callable
 
 from .McpClient import McpClient
 from .McpServerBase import McpServerBase
@@ -45,6 +45,16 @@ class McpHost:
         self.mcpClients: List[McpClientModel] = [];
         self.mcpServers: List[McpServerModel] = [];
         self.mcpFunctionTools: List[McpFunctionTool] = [];
+
+        self.logEvent: Callable[[str, str, str, Any], None] | None = None
+
+    def onEvent(self, event: Callable[[str, str, str, Any], None]) -> None:
+        """
+        subscribe to the on event.
+        Args:
+            event:   the log event handler.
+        """
+        self.logEvent = event
 
     def getClients(self) -> List[McpClientModel]:
         """
@@ -190,10 +200,16 @@ class McpHost:
 
     async def closeAll(self) -> None:
         """
-        close all clients and servers.
+        close this host and all clients and servers.
         """
         self.closeServers()
         await self.closeClients()
+
+        self.mcpClients = [];
+        self.mcpServers = [];
+        self.mcpFunctionTools = [];
+
+        self.logEvent = None
 
     def closeServers(self) -> None:
         """
@@ -205,7 +221,8 @@ class McpHost:
                 # close
                 server.server.stopServer();
             except Exception as e:
-                valid: bool = False
+                if (self.logEvent): 
+                    self.logEvent("error", "close", "close server", e)
 
     async def closeClients(self) -> None:
         """
@@ -217,7 +234,8 @@ class McpHost:
                 # close
                 await client.client.closeConnection()
             except Exception as e:
-                valid: bool = False
+                if (self.logEvent):
+                    self.logEvent("error", "close", "close client", e)
 
     async def addServerFunctionTools(self, id: str, mcpServer: McpServerBase) -> None:
         """
