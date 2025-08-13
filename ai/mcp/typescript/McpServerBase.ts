@@ -35,6 +35,7 @@ export class McpServerBase {
     private open: boolean;
     private mcp: McpServer;
     private httpTransportStateless: boolean;
+    private transport: StdioServerTransport | null = null;
     private httpTransports: Array<McpHttpTransportModel>;
     private tools: Array<McpTool>;
     private prompts: Array<McpPrompt>;
@@ -500,10 +501,19 @@ export class McpServerBase {
             for (var i = 0; i < this.httpTransports.length; i++) {
                 try {
                     // close the transport.
-                    this.httpTransports[i].transport.close();
+                    await this.httpTransports[i].transport.close();
                 } catch (e) {
                     if (this.logEvent) this.logEvent("error", "close", "stop http transport", e);
                 }
+            }
+
+            try {
+                // close the stdio transport.
+                await this.transport.close();
+
+            } catch (e) {
+                // some error on close.
+                if (this.logEvent) this.logEvent("error", "close", "stop stdio transport", e);
             }
 
             // empty list.
@@ -542,8 +552,8 @@ export class McpServerBase {
             try {
                 // ... set up server resources, tools, and prompts ...
                 // before starting server.
-                const transport = new StdioServerTransport();
-                await this.mcp.connect(transport);
+                this.transport = new StdioServerTransport();
+                await this.mcp.connect(this.transport);
                 
                 // connection open.
                 this.open = true;
