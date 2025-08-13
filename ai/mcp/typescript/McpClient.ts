@@ -262,7 +262,7 @@ export class McpClient {
             } catch (e) {
                 this.open = false;
                 if (this.logEvent) this.logEvent("error", "open", "open connection stdio", e);
-                //throw e;
+                throw e;
             }
         }
     }
@@ -302,7 +302,7 @@ export class McpClient {
             } catch (e) {
                 this.open = false;
                 if (this.logEvent) this.logEvent("error", "open", "open connection stdio custom", e);
-                //throw e;
+                throw e;
             }
         }
     }
@@ -336,7 +336,7 @@ export class McpClient {
             } catch (e) {
                 this.open = false;
                 if (this.logEvent) this.logEvent("error", "open", "open connection stdio server param", e);
-                //throw e;
+                throw e;
             }
         }
     }
@@ -391,7 +391,7 @@ export class McpClient {
             } catch (e) {
                 this.open = false;
                 if (this.logEvent) this.logEvent("error", "open", "open connection http", e);
-                //throw e;
+                throw e;
             }
         }
     }
@@ -435,7 +435,7 @@ export class McpClient {
             } catch (e) {
                 this.open = false;
                 if (this.logEvent) this.logEvent("error", "open", "open connection http custom", e);
-                //throw e;
+                throw e;
             }
         }
     }
@@ -474,7 +474,6 @@ export class McpClient {
                 }
                 haslist = true;
             } catch (e) {
-                haslist = false;
                 if (this.logEvent) this.logEvent("error", "tools", "request tools", e);
             }
         }
@@ -509,7 +508,6 @@ export class McpClient {
                 }
                 haslist = true;
             } catch (e) {
-                haslist = false;
                 if (this.logEvent) this.logEvent("error", "prompts", "request prompts", e);
             }
         }

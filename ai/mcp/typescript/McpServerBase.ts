@@ -206,7 +206,6 @@ export class McpServerBase {
             result = true;
         } catch (e) {
             if (this.logEvent) this.logEvent("error", "tools", "register tool", e);
-            //throw e;
         }
         return result;
     }
@@ -272,7 +271,6 @@ export class McpServerBase {
             result = true;
         } catch (e) {
             if (this.logEvent) this.logEvent("error", "resources", "register resource", e);
-            //throw e;
         }
         return result;
     }
@@ -338,7 +336,6 @@ export class McpServerBase {
             result = true;
         } catch (e) {
             if (this.logEvent) this.logEvent("error", "resource_templates", "register resource template", e);
-            //throw e;
         }
         return result;
     }
@@ -402,7 +399,6 @@ export class McpServerBase {
             result = true;
         } catch (e) {
             if (this.logEvent) this.logEvent("error", "prompts", "register prompt", e);
-            //throw e;
         }
         return result;
     }
@@ -555,7 +551,7 @@ export class McpServerBase {
             } catch (e) {
                 this.open = false;
                 if (this.logEvent) this.logEvent("error", "start", "start server stdio", e);
-                //throw e;
+                throw e;
             }
         }
     }
@@ -636,7 +632,7 @@ export class McpServerBase {
             } catch (e) {
                 this.open = false;
                 if (this.logEvent) this.logEvent("error", "start", "start server http", e);
-                //throw e;
+                throw e;
             }
         }
     }
