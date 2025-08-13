@@ -194,7 +194,7 @@ class McpClient:
                 self.open = False
                 if (self.logEvent):
                     self.logEvent("error", "open", "open connection stdio", e)
-                #raise  # Re-throws the same exception
+                raise  # Re-throws the same exception
 
     async def openConnectionStdioCustom(self, command: str, argsList: List[str] | None = None, envList: Dict[str, str] | None = None):
         """
@@ -238,7 +238,7 @@ class McpClient:
                 self.open = False
                 if (self.logEvent):
                     self.logEvent("error", "open", "open connection stdio custom", e)
-                #raise  # Re-throws the same exception
+                raise  # Re-throws the same exception
 
     async def openConnectionStdioServerParam(self, server: StdioServerParameters):
         """
@@ -273,7 +273,7 @@ class McpClient:
                 self.open = False
                 if (self.logEvent):
                     self.logEvent("error", "open", "open connection stdio server param", e)
-                #raise  # Re-throws the same exception
+                raise  # Re-throws the same exception
 
     async def openConnectionHttp(self, serverUrl: str, requestInit: Dict[str, str] | None = None):
         """
@@ -324,7 +324,7 @@ class McpClient:
                 self.open = False
                 if (self.logEvent):
                     self.logEvent("error", "open", "open connection http", e)
-                #raise  # Re-throws the same exception
+                raise  # Re-throws the same exception
 
     async def openConnectionHttpCustom(self, serverUrl: str, headers: Dict[str, str] | None = None, auth: httpx.Auth | None = None):
         """
@@ -373,7 +373,7 @@ class McpClient:
                 self.open = False
                 if (self.logEvent):
                     self.logEvent("error", "open", "open connection http custom", e)
-                #raise  # Re-throws the same exception
+                raise  # Re-throws the same exception
 
     async def requestTools(self) -> bool:
         """
@@ -405,7 +405,6 @@ class McpClient:
 
                 haslist = True
             except Exception as e:
-                haslist = False
                 if (self.logEvent):
                     self.logEvent("error", "tools", "request tools", e)
 
@@ -440,7 +439,6 @@ class McpClient:
 
                 haslist = True
             except Exception as e:
-                haslist = False
                 if (self.logEvent):
                     self.logEvent("error", "prompts", "request prompts", e)
 

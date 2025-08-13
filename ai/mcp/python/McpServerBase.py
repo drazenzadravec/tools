@@ -124,7 +124,6 @@ class McpServerBase:
         except Exception as e:
             if (self.logEvent):
                 self.logEvent("error", "tools", "register tool", e)
-            #raise
 
         return result
 
@@ -176,7 +175,6 @@ class McpServerBase:
         except Exception as e:
             if (self.logEvent):
                 self.logEvent("error", "resources", "register resource", e)
-            #raise
 
         return result
 
@@ -220,7 +218,6 @@ class McpServerBase:
         except Exception as e:
             if (self.logEvent):
                 self.logEvent("error", "resource_templates", "register resource template", e)
-            #raise
 
         return result
 
@@ -273,7 +270,6 @@ class McpServerBase:
         except Exception as e:
             if (self.logEvent):
                 self.logEvent("error", "prompts", "register prompt", e)
-            #raise
 
         return result
 
@@ -475,7 +471,7 @@ class McpServerBase:
                 self.open = False
                 if (self.logEvent):
                     self.logEvent("error", "start", "start server stdio", e)
-                #raise  # Re-throws the same exception
+                raise  # Re-throws the same exception
 
     def startServerHttp(self):
         """
@@ -497,4 +493,4 @@ class McpServerBase:
                 self.open = False
                 if (self.logEvent):
                     self.logEvent("error", "start", "start server http", e)
-                #raise  # Re-throws the same exception
+                raise  # Re-throws the same exception
