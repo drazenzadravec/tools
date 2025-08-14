@@ -446,11 +446,9 @@ class McpServerBase:
         """
         stop receiving messages on stdin and sending messages on stdout
         """
-        # if open.
-        if self.open:
-            self.mcp = None
-            self.logEvent = None
-            self.open = False
+        self.mcp = None
+        self.logEvent = None
+        self.open = False
 
     def startServerStdio(self):
         """

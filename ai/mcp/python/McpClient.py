@@ -126,24 +126,21 @@ class McpClient:
         """
         disconnect from the MCP server.
         """
-        # if open.
-        if self.open:
-            self.session = None
+        self.session = None
+        self.tools = [];
+        self.prompts = [];
+        self.resources = [];
 
-            self.tools = [];
-            self.prompts = [];
-            self.resources = [];
+        try:
+            # close the stack.
+            await self.exit_stack.aclose()
+        except Exception as e:
+            if (self.logEvent):
+                self.logEvent("error", "mcpclient", "client close", e)
 
-            try:
-                # close the stack.
-                await self.exit_stack.aclose()
-            except Exception as e:
-                if (self.logEvent):
-                    self.logEvent("error", "mcpclient", "client close", e)
-
-            # closed
-            self.logEvent = None
-            self.open = False
+        # closed
+        self.logEvent = None
+        self.open = False
 
     async def openConnectionStdio(self, serverScriptPath: str):
         """
