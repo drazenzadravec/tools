@@ -501,7 +501,7 @@ export class McpServerBase {
             for (var i = 0; i < this.httpTransports.length; i++) {
                 try {
                     // close the transport.
-                    await this.httpTransports[i].transport.close();
+                    if (this.httpTransports[i].transport) await this.httpTransports[i].transport.close();
                 } catch (e) {
                     if (this.logEvent) this.logEvent("error", "close", "stop http transport", e);
                 }
@@ -509,36 +509,35 @@ export class McpServerBase {
 
             try {
                 // close the stdio transport.
-                await this.transport.close();
+                if (this.transport) await this.transport.close();
 
             } catch (e) {
                 // some error on close.
                 if (this.logEvent) this.logEvent("error", "close", "stop stdio transport", e);
             }
-
-            // empty list.
-            this.httpTransports = [];
-
-            // init
-            this.tools = [];
-            this.prompts = [];
-            this.resources = [];
-            this.toolsCallback = [];
-            this.promptsCallback = [];
-            this.resourcesCallback = [];
-
-            try {
-                // close the mcp connection.
-                await this.mcp.close();
-
-            } catch (e) {
-                // some error on close.
-                if (this.logEvent) this.logEvent("error", "close", "stop server", e);
-            } 
-
-            this.open = false;
-            this.logEvent = null;
         }
+
+        try {
+            // close the mcp connection.
+            await this.mcp.close();
+        } catch (e) {
+            // some error on close.
+            if (this.logEvent) this.logEvent("error", "close", "stop server", e);
+        }
+
+        // empty list.
+        this.httpTransports = [];
+
+        // init
+        this.tools = [];
+        this.prompts = [];
+        this.resources = [];
+        this.toolsCallback = [];
+        this.promptsCallback = [];
+        this.resourcesCallback = [];
+
+        this.open = false;
+        this.logEvent = null;
     }
 
     /**

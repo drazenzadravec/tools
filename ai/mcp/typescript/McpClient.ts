@@ -175,15 +175,9 @@ export class McpClient {
     async closeConnection(): Promise<void> {
         // if open.
         if (this.open) {
-
-            // init
-            this.tools = [];
-            this.prompts = [];
-            this.resources = [];
-
             try {
                 // close the mcp transport.
-                await this.transport.close();
+                if (this.transport) await this.transport.close();
 
             } catch (e) {
                 // some error on close.
@@ -192,26 +186,29 @@ export class McpClient {
 
             try {
                 // close the mcp transport.
-                await this.httpTransport.close();
+                if (this.httpTransport) await this.httpTransport.close();
 
             } catch (e) {
                 // some error on close.
                 if (this.logEvent) this.logEvent("error", "httptransport", "http transport close", e);
             }
-
-            try {
-                // close the mcp connection.
-                await this.mcp.close();
-
-            } catch (e) {
-                // some error on close.
-                if (this.logEvent) this.logEvent("error", "mcpclient", "client close", e);
-            } 
-
-            // closed
-            this.open = false;
-            this.logEvent = null;
         }
+
+        try {
+            // close the mcp connection.
+            await this.mcp.close();
+        } catch (e) {
+            // some error on close.
+            if (this.logEvent) this.logEvent("error", "mcpclient", "client close", e);
+        }
+
+        // init
+        this.tools = [];
+        this.prompts = [];
+        this.resources = [];
+
+        this.open = false;
+        this.logEvent = null;
     }
 
     /**
