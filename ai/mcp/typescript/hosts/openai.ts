@@ -1,4 +1,4 @@
-import { McpItem } from '../AiTypes.js';
+import { McpItem } from './AiTypes.js';
 
 import { OpenAI } from "openai";
 import {
