@@ -4,35 +4,23 @@
 OpenAI Host implementation
 
 ```typescript
-/**
-* get the tools.
-* @param {McpHost} mcpHost     the mcp host.
-* @returns {FunctionTool[]}    the list of tools
-*/
-function getTools(mcpHost: McpHost): Array<FunctionTool> {
-    // the tools
-    let tools: Array<FunctionTool> = [];
+import { McpItem } from './AiTypes.js';
+import { executeProvider } from './provider.js';
 
-    // get the host.
-    let functionTools: McpFunctionTool[] = mcpHost.getFunctionTools();
-    for (var i = 0; i < functionTools.length; i++) {
-        // add to tools
-        let tool: McpTool = functionTools[i];
-        tools.push({
-            type: "function",
-            name: tool.name,
-            description: tool.description,
-            parameters: {
-                type: 'object',
-                properties: tool.parameters.properties,
-                required: tool.parameters.required,
-                additionalProperties: false
-            },
-            strict: true
-        })
-    }
+import {
+	McpHost,
+} from './McpHost.mjs';
 
-    // return the tools
-    return tools;
-}
+import { createMcpHost } from './hostMain.js';
+
+// get the json
+let requestBody: any = JSON.parse(event.body);
+let mcpPrompt: McpItem = requestBody as McpItem;
+let mcpHost: McpHost = await createMcpHost();
+
+// process the query.
+let { result, results } = await executeProvider(mcpPrompt, mcpHost);
+
+// close the connection.
+await mcpHost.closeAll();
 ```
