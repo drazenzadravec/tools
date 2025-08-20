@@ -1,9 +1,9 @@
 import {
 	McpHost,
-} from './McpHost.js';
+} from '../McpHost.js';
 
-import { MathJsMath } from "./servers/MathJsMath.js";
-import { MicrosoftLearn } from "./clients/MicrosoftLearn.js";
+import { MathJsMath } from "../servers/MathJsMath.js";
+import { MicrosoftLearn } from "../clients/MicrosoftLearn.js";
 
 /**
 * create a new mcp host.
