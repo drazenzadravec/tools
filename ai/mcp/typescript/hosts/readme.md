@@ -9,7 +9,7 @@ import { executeProvider } from './provider.js';
 
 import {
 	McpHost,
-} from './McpHost.mjs';
+} from '../McpHost.js';
 
 import { createMcpHost } from './hostMain.js';
 
