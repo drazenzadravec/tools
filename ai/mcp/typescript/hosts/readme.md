@@ -13,9 +13,17 @@ import {
 
 import { createMcpHost } from './hostMain.js';
 
-// get the json
-let requestBody: any = JSON.parse(event.body);
-let mcpPrompt: McpItem = requestBody as McpItem;
+// get the prompt.
+let mcpPrompt: McpItem = {
+    query: 'Use MathJs to evaluate math expression: (cos(pi/4) * pi*2)',
+    model: 'gpt-5-mini',
+    provider: 'openai',
+    max_output_tokens: 3000,
+    temperature: 1.0,
+    top_p: 1.0
+};
+
+// create the host (connection to the AI provider service).
 let mcpHost: McpHost = await createMcpHost();
 
 // process the query.
