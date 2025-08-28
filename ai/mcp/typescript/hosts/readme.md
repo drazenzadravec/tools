@@ -1,7 +1,7 @@
 ## MCP Hosts
 
-### OpenAI
-OpenAI Host implementation
+### Host Implementation
+This implementation can support any LLM provider, for this sample OpenAI is demonstrated.
 
 ```typescript
 import { McpItem } from './AiTypes.js';
