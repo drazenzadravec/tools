@@ -31,4 +31,12 @@ let { result, results } = await executeProvider(mcpPrompt, mcpHost);
 
 // close the connection.
 await mcpHost.closeAll();
+
+// display the results.
+console.log("result: " + result);
+console.log("results: " + results);
 ```
+/**
+result: success
+results: 4.442882938158366
+*/
