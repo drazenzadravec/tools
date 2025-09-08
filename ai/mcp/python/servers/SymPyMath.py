@@ -45,7 +45,7 @@ class SymPyMath(McpServerBase):
                 "required": ["expression"],
                 "additionalProperties": False
             })
-        return result;
+        return result
 
     def registerPrompt_MathExpressionEvaluator(self) -> bool:
         """
@@ -58,7 +58,7 @@ class SymPyMath(McpServerBase):
             "MathExpressionEvaluator",
             self.mathExpressionEvaluatorPrompt,
             "Evaluate the mathematical expression",
-            [ PromptArgument(name = "expression", description = "the math expression", required = True) ]
+            [ PromptArgument(name = "expression", description = "the SymPy mathematical expression", required = True) ]
         )
 
     def registerPrompt_MathExpressionResult(self) -> bool:
@@ -216,7 +216,7 @@ class SymPyMath(McpServerBase):
         Return:
             the list of prompt helpers.
         """
-        prompts: List[McpPromptHelper] = [];
+        prompts: List[McpPromptHelper] = []
 
         # add prompt.
         prompts.append(McpPromptHelper(
