@@ -24,6 +24,7 @@ export class McpClient {
     // global.
     private open: boolean;
     private mcp: Client;
+    private timeout: number = 0;
     private transport: StdioClientTransport | null = null;
     private httpTransport: StreamableHTTPClientTransport | null = null;
     private tools: Array<McpTool>;
@@ -46,6 +47,7 @@ export class McpClient {
 
         // create the client.
         this.open = false;
+        this.timeout = 60000; // default timeout 60 seconds.
         this.mcp = new Client({
             name: name,
             version: version
@@ -66,6 +68,14 @@ export class McpClient {
     onEvent(event: (eventType: string, name: string, message: string, details: any) => void): void {
         // assign the event.
         this.logEvent = event;
+    }
+
+    /**
+     * a timeout (in milliseconds) for this request. If exceeded, an McpError with code `RequestTimeout` will be raised from request().
+     * @param {number} timeout  set for this request (in milliseconds) default timeout 60 seconds.
+     */
+    setTimeout(timeout: number): void {
+        this.timeout = timeout;
     }
 
     /**
@@ -126,6 +136,9 @@ export class McpClient {
             return await this.mcp.callTool({
                 name: name,
                 arguments: args
+            }, undefined,
+            {
+                timeout: this.timeout
             });
         }
         else {
@@ -145,6 +158,9 @@ export class McpClient {
             return await this.mcp.getPrompt({
                 name: name,
                 arguments: args
+            },
+            {
+                timeout: this.timeout
             });
         }
         else {
@@ -162,6 +178,9 @@ export class McpClient {
         if (this.open) {
             return await this.mcp.readResource({
                 uri: uri
+            },
+            {
+                timeout: this.timeout   
             });
         }
         else {
