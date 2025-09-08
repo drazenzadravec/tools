@@ -4,6 +4,7 @@ from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
 from mcp.client.streamable_http import streamablehttp_client
 
+from datetime import timedelta
 from pydantic import AnyUrl, TypeAdapter
 from typing import Optional, Any, List, Union, Callable, Dict
 from contextlib import AsyncExitStack
@@ -17,6 +18,7 @@ class McpClient:
     """
     def __init__(self):
         self.open = False
+        self.timeout: timedelta = 60  # default timeout 60 seconds
         self.logEvent: Callable[[str, str, str, Any], None] | None = None
 
         # Initialize session and client objects
@@ -35,6 +37,14 @@ class McpClient:
             event:   the log event handler.
         """
         self.logEvent = event
+
+    def setTimeout(self, timeout: timedelta) -> None:
+        """
+        set the timeout in seconds (default timeout 60 seconds).
+        Args:
+            timeout:    the timeout in seconds.
+        """
+        self.timeout = timeout
 
     def isConnected(self) -> bool:
         """
@@ -85,7 +95,7 @@ class McpClient:
         """
         # if open.
         if self.open:
-            return await self.session.call_tool(name, arguments = args)
+            return await self.session.call_tool(name, arguments = args, read_timeout_seconds = self.timeout)
         else:
             return None
 
@@ -297,10 +307,11 @@ class McpClient:
 
                 # open a connection to the MCP server.
                 if(requestInit is None):
-                    http_transport = await self.exit_stack.enter_async_context(streamablehttp_client(serverUrl))
+                    http_transport = await self.exit_stack.enter_async_context(
+                        streamablehttp_client(serverUrl, timeout=self.timeout))
                 else:
                     http_transport = await self.exit_stack.enter_async_context(
-                        streamablehttp_client(url=serverUrl, headers=requestInit))
+                        streamablehttp_client(url=serverUrl, headers=requestInit, timeout=self.timeout))
 
                 # get streams
                 self.read, self.write, _, = http_transport
@@ -349,7 +360,7 @@ class McpClient:
 
                 # open a connection to the MCP server.
                 http_transport = await self.exit_stack.enter_async_context(
-                    streamablehttp_client(url=serverUrl, headers=headers, auth=auth))
+                    streamablehttp_client(url=serverUrl, headers=headers, timeout=self.timeout, auth=auth))
                 
                 # get streams
                 self.read, self.write, _, = http_transport
