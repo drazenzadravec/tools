@@ -304,7 +304,7 @@ class McpServerBase:
         Return:
             the list of tools; else empty.
         """
-        tools: List[McpTool] = [];
+        tools: List[McpTool] = []
 
         try:
             # load all tools.
@@ -339,7 +339,7 @@ class McpServerBase:
         Return:
             the list of prompts; else empty.
         """
-        prompts: List[McpPrompt] = [];
+        prompts: List[McpPrompt] = []
         
         try:
             # load all prompts.
@@ -366,7 +366,7 @@ class McpServerBase:
         Return:
             the list of resources; else empty.
         """
-        resources: List[McpResource] = [];
+        resources: List[McpResource] = []
 
         try:
             # load all resources.

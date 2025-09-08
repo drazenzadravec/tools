@@ -42,9 +42,9 @@ class McpHost:
     """
     def __init__(self):
         # init
-        self.mcpClients: List[McpClientModel] = [];
-        self.mcpServers: List[McpServerModel] = [];
-        self.mcpFunctionTools: List[McpFunctionTool] = [];
+        self.mcpClients: List[McpClientModel] = []
+        self.mcpServers: List[McpServerModel] = []
+        self.mcpFunctionTools: List[McpFunctionTool] = []
 
         self.logEvent: Callable[[str, str, str, Any], None] | None = None
 
@@ -205,9 +205,9 @@ class McpHost:
         self.closeServers()
         await self.closeClients()
 
-        self.mcpClients = [];
-        self.mcpServers = [];
-        self.mcpFunctionTools = [];
+        self.mcpClients = []
+        self.mcpServers = []
+        self.mcpFunctionTools = []
 
         self.logEvent = None
 
@@ -219,7 +219,7 @@ class McpHost:
         for server in self.mcpServers:
             try:
                 # close
-                server.server.stopServer();
+                server.server.stopServer()
             except Exception as e:
                 if (self.logEvent): 
                     self.logEvent("error", "close", "close server", e)
@@ -246,10 +246,10 @@ class McpHost:
             mcpServer: the mcp server
         """
         # add each server.
-        self.addServer(id, mcpServer);
+        self.addServer(id, mcpServer)
 
         # add tools.
-        tools: List[McpTool] = await mcpServer.getTools();
+        tools: List[McpTool] = await mcpServer.getTools()
 
         # assign function
         for tool in tools:

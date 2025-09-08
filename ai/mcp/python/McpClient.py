@@ -24,9 +24,9 @@ class McpClient:
         self.exit_stack = AsyncExitStack()
 
         # init
-        self.tools: List[McpTool] = [];
-        self.prompts: List[McpPrompt] = [];
-        self.resources: List[McpResource] = [];
+        self.tools: List[McpTool] = []
+        self.prompts: List[McpPrompt] = []
+        self.resources: List[McpResource] = []
 
     def onEvent(self, event: Callable[[str, str, str, Any], None]) -> None:
         """
@@ -127,9 +127,9 @@ class McpClient:
         disconnect from the MCP server.
         """
         self.session = None
-        self.tools = [];
-        self.prompts = [];
-        self.resources = [];
+        self.tools = []
+        self.prompts = []
+        self.resources = []
 
         try:
             # close the stack.
@@ -293,7 +293,7 @@ class McpClient:
         # if not open.
         if not self.open:
             try:
-                http_transport = None;
+                http_transport = None
 
                 # open a connection to the MCP server.
                 if(requestInit is None):
@@ -345,12 +345,12 @@ class McpClient:
         # if not open.
         if not self.open:
             try:
-                http_transport = None;
+                http_transport = None
 
                 # open a connection to the MCP server.
                 http_transport = await self.exit_stack.enter_async_context(
                     streamablehttp_client(url=serverUrl, headers=headers, auth=auth))
-                    
+                
                 # get streams
                 self.read, self.write, _, = http_transport
                 self.session = await self.exit_stack.enter_async_context(ClientSession(self.read, self.write))
@@ -383,7 +383,7 @@ class McpClient:
 
         # if open.
         if self.open:
-            self.tools = [];
+            self.tools = []
 
             try:
                 # load all tools.
@@ -418,7 +418,7 @@ class McpClient:
 
         # if open.
         if self.open:
-            self.prompts = [];
+            self.prompts = []
 
             try:
                 # load all prompts.
@@ -452,7 +452,7 @@ class McpClient:
 
         # if open.
         if self.open:
-            self.resources = [];
+            self.resources = []
 
             try:
                 # load all resources.
