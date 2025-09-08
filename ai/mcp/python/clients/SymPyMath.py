@@ -23,7 +23,7 @@ class SymPyMath(McpClient):
         res: Any = await self.callTool("MathExpressionEvaluator", args={"expression": expression})
 
         # return the result.
-        return res;
+        return res
 
     async def callMathExpressionEvaluatorPrompt(self, expression: str) -> Union[Any, None]:
         """
@@ -38,7 +38,7 @@ class SymPyMath(McpClient):
         res: Any = await self.callPrompt("MathExpressionEvaluator", args={"expression": expression})
 
         # return the result.
-        return res;
+        return res
 
     async def callMathExpressionResultPrompt(self, result: str) -> Union[Any, None]:
         """
@@ -53,7 +53,7 @@ class SymPyMath(McpClient):
         res: Any = await self.callPrompt("MathExpressionResult", args={"result": result})
 
         # return the result.
-        return res;
+        return res
 
     async def callSymPyDocsUrlResource(self) -> Union[Any, None]:
         """
@@ -65,7 +65,7 @@ class SymPyMath(McpClient):
         res: Any = await self.callResource("sympy://{version}")
 
         # return the result.
-        return res;
+        return res
 
     async def callSymPyDocsUrlVersionResource(self, version: str) -> Union[Any, None]:
         """
@@ -80,4 +80,4 @@ class SymPyMath(McpClient):
         res: Any = await self.callResource(f"sympy://doc/{version}/num")
 
         # return the result.
-        return res;
+        return res

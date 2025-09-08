@@ -23,7 +23,7 @@ class MathJsMath(McpClient):
         res: Any = await self.callTool("MathExpressionEvaluator", args={"expression": expression})
 
         # return the result.
-        return res;
+        return res
 
     async def callMathExpressionEvaluatorPrompt(self, expression: str) -> Union[Any, None]:
         """
@@ -38,7 +38,7 @@ class MathJsMath(McpClient):
         res: Any = await self.callPrompt("MathExpressionEvaluator", args={"expression": expression})
 
         # return the result.
-        return res;
+        return res
 
     async def callMathExpressionResultPrompt(self, result: str) -> Union[Any, None]:
         """
@@ -53,7 +53,7 @@ class MathJsMath(McpClient):
         res: Any = await self.callPrompt("MathExpressionResult", args={"result": result})
 
         # return the result.
-        return res;
+        return res
 
     async def callMathJsDocsUrlResource(self) -> Union[Any, None]:
         """
@@ -65,7 +65,7 @@ class MathJsMath(McpClient):
         res: Any = await self.callResource("mathjs://{version}")
 
         # return the result.
-        return res;
+        return res
 
     async def callMathJsDocsUrlVersionResource(self, version: str) -> Union[Any, None]:
         """
@@ -80,4 +80,4 @@ class MathJsMath(McpClient):
         res: Any = await self.callResource(f"mathjs://doc/{version}/num")
 
         # return the result.
-        return res;
+        return res
