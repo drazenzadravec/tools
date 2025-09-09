@@ -18,7 +18,7 @@ class McpClient:
     """
     def __init__(self):
         self.open = False
-        self.timeout: timedelta = 60  # default timeout 60 seconds
+        self.timeout: timedelta = timedelta(seconds=60)  # default timeout 60 seconds
         self.logEvent: Callable[[str, str, str, Any], None] | None = None
 
         # Initialize session and client objects
