@@ -27,14 +27,14 @@ class SymPyMath(McpServerBase):
             true if tool registered; else false.
         """
         result: bool = self.registerTool(
-            "MathExpressionEvaluator", 
+            "SymPy_MathExpressionEvaluator", 
             self.mathExpressionEvaluator,
             "Use SymPy to execute the mathematical expressions")
 
         # if added
         if (result):
             # set parameters
-            self.setToolParameters("MathExpressionEvaluator", {
+            self.setToolParameters("SymPy_MathExpressionEvaluator", {
                 "type": "object",
                 "properties": {
                     "expression": {
@@ -145,10 +145,10 @@ class SymPyMath(McpServerBase):
 
     def mathExpressionEvaluator(self, expression: str) -> str:
         """
-        math expression evaluator.
+        use SymPy to execute the mathematical expressions
 
         Args:
-            expression:    expression to evaluate.
+            expression:    the SymPy mathematical expression.
 
         Return:
             the expression result.
