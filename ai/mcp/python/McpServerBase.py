@@ -119,7 +119,7 @@ class McpServerBase:
         """
         result: bool = False
         try:
-            self.mcp.add_tool(callback, name, description, annotations)
+            self.mcp.add_tool(callback, name, description, annotations, structured_output=False)
             result = True
         except Exception as e:
             if (self.logEvent):
