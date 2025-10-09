@@ -20,7 +20,7 @@ class MathJsMath(McpClient):
         Return:
             the evaluated expression.
         """
-        res: Any = await self.callTool("MathExpressionEvaluator", args={"expression": expression})
+        res: Any = await self.callTool("MathJS_MathExpressionEvaluator", args={"expression": expression})
 
         # return the result.
         return res
