@@ -30,7 +30,7 @@ export class MathJsMath extends McpServerBase {
 
         let localThis = this;
         return this.registerTool(
-            "MathExpressionEvaluator",
+            "MathJS_MathExpressionEvaluator",
             {
                 description: "Use MathJS to execute the mathematical expressions",
                 inputSchema: {
