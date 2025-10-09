@@ -23,7 +23,7 @@ async def main():
     print(sympymathServer.registerResource_SymPyDocsUrl_Version())
 
     print(await sympymathServer.callPrompt("MathExpressionEvaluator", args={"expression": "cos(0)"}))
-    print(await sympymathServer.callTool("MathExpressionEvaluator", args={"expression": "integrate(x**2, x)"}))
+    print(await sympymathServer.callTool("SymPy_MathExpressionEvaluator", args={"expression": "integrate(x**2, x)"}))
     print(await sympymathServer.callResource("sympy://{version}"))
     print(await sympymathServer.callResource("sympy://doc/777777/num"))
 
