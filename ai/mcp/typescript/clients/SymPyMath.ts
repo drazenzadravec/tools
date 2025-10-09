@@ -18,7 +18,7 @@ export class SymPyMath extends McpClient {
      * @returns {Promise<any>} the evaluated expression.
      */
     async callMathExpressionEvaluatorTool(expression: string): Promise<any> {
-        let res: any = await this.callTool("MathExpressionEvaluator", {
+        let res: any = await this.callTool("SymPy_MathExpressionEvaluator", {
             expression: expression
         });
 

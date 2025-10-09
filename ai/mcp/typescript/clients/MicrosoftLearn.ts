@@ -19,7 +19,7 @@ export class MicrosoftLearn extends McpClient {
     }
 
     /**
-     * open microsoft learn connection..
+     * open microsoft learn connection.
      * @returns {boolean} true if opened; else false.
      */
     async openMicrosoftLearn(): Promise<void> {
@@ -33,7 +33,7 @@ export class MicrosoftLearn extends McpClient {
             for (var i = 0; i < tools.length; i++) {
                 if (!tools[i].parameters.required) {
                     // change
-                    tools[i].parameters.required = ['query', 'question'];
+                    tools[i].parameters.required = ['query'];
                 }
             }
 
@@ -42,3 +42,9 @@ export class MicrosoftLearn extends McpClient {
         }
     }
 }
+
+
+//var client = new MicrosoftLearn();
+//await client.openMicrosoftLearn();
+//var tools = client.getTools();
+//console.log(tools[2].parameters);

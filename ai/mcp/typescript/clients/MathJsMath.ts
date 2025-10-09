@@ -18,7 +18,7 @@ export class MathJsMathClient extends McpClient {
      * @returns {Promise<any>} the evaluated expression.
      */
     async callMathExpressionEvaluatorTool(expression: string): Promise<any> {
-        let res: any = await this.callTool("MathExpressionEvaluator", {
+        let res: any = await this.callTool("MathJS_MathExpressionEvaluator", {
             expression: expression
         });
 
