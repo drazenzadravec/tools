@@ -3,7 +3,7 @@ import {
     PromptCallback,
     ReadResourceCallback,
     ReadResourceTemplateCallback,
-    ResourceTemplate
+    ResourceTemplate,
 } from "@modelcontextprotocol/sdk/server/mcp.js";
 import {
     StreamableHTTPServerTransport
@@ -12,6 +12,10 @@ import {
     z,
     ZodRawShape,
 } from 'zod';
+import {
+    AnySchema,
+    ZodRawShapeCompat,
+} from '@modelcontextprotocol/sdk/server/zod-compat.js';
 
 /**
  * Model context protocol tool.
@@ -39,7 +43,7 @@ export interface McpToolParameters {
  */
 export interface McpToolCallback {
     "name"?: string;
-    "callback"?: ToolCallback<undefined | ZodRawShape>;
+    "callback"?: ToolCallback<undefined | ZodRawShapeCompat | AnySchema>;
 }
 
 /**

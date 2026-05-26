@@ -153,6 +153,7 @@ export class McpServerBase {
      * @param {string} name         the name of the tool
      * @param {object} config       the tool configuration   
      * @param {Function} callback   the callback function.
+     * @param {McpToolParameters} parameters   [optional] the parameters.
      * @returns {boolean} true if register; else false.
      * @example 
      *  Add an addition tool:
@@ -164,7 +165,20 @@ export class McpServerBase {
         },
         async ({ a, b }) => ({
             content: [{ type: "text", text: String(a + b) }]
-        })
+        }),
+        {
+            properties: {
+                a: {
+                    type: 'string',
+                    description: 'the value a'
+                },
+                b: {
+                    type: 'string',
+                    description: 'the value b'
+                }
+            },
+            required: ['a', 'b'],
+        }
      */
     registerTool(
         name: string,
@@ -202,7 +216,7 @@ export class McpServerBase {
             });
             this.toolsCallback.push({
                 name: name,
-                callback: registeredTool.callback
+                callback: callback
             });
             result = true;
         } catch (e) {
