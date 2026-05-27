@@ -7,7 +7,7 @@ from mcp.client.streamable_http import streamablehttp_client
 from datetime import timedelta
 from pydantic import AnyUrl, TypeAdapter
 from typing import Optional, Any, List, Union, Callable, Dict
-from contextlib import AsyncExitStack
+from contextlib import AsyncExitStack, _AsyncGeneratorContextManager
 
 from .McpTypes import McpTool, McpPrompt, McpResource, McpToolParameters
 
@@ -361,6 +361,59 @@ class McpClient:
                 # open a connection to the MCP server.
                 http_transport = await self.exit_stack.enter_async_context(
                     streamablehttp_client(url=serverUrl, headers=headers, timeout=self.timeout, auth=auth))
+                
+                # get streams
+                self.read, self.write, _, = http_transport
+                self.session = await self.exit_stack.enter_async_context(ClientSession(self.read, self.write))
+                
+                # Initialize the connection
+                await self.session.initialize()
+                
+                # client connected.
+                self.open = True
+
+                # request.
+                await self.requestTools()
+                await self.requestPrompts()
+                await self.requestResources()
+                
+            except Exception as e:
+                self.open = False
+                if (self.logEvent):
+                    self.logEvent("error", "open", "open connection http custom", e)
+                raise  # Re-throws the same exception
+
+    async def openConnectionHttpTransport(self, transport: _AsyncGeneratorContextManager):
+        """
+        connect to the MCP server.
+        start receiving messages on streamable HTTP.
+        For remote servers, set up a Streamable HTTP transport that handles
+        both client requests and server-to-client notifications.
+
+        Args:
+            transport: the transport to use to connect to the server. A streamablehttp_client implementation.
+
+        Example:
+            from botocore.credentials import Credentials
+            from mcp_proxy_for_aws.client import aws_iam_streamablehttp_client
+
+            creds = Credentials(access_key="KEY", secret_key="SECRET")
+
+            transport = aws_iam_streamablehttp_client(
+                endpoint="https://example.com/mcp",
+                aws_service="lambda",
+                aws_region="ap-southeast-2",
+                credentials=creds
+            )
+        """
+
+        # if not open.
+        if not self.open:
+            try:
+                http_transport = None
+
+                # open a connection to the MCP server.
+                http_transport = await self.exit_stack.enter_async_context(transport)
                 
                 # get streams
                 self.read, self.write, _, = http_transport
