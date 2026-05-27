@@ -457,6 +457,54 @@ export class McpClient {
     }
 
     /**
+     * connect to the MCP server.
+     * start receiving messages on streamable HTTP.
+     * For remote servers, set up a Streamable HTTP transport that handles 
+     * both client requests and server-to-client notifications.
+     * @param {StreamableHTTPClientTransport} transport the transport to use to connect to the server.
+     * @example
+     *      const transport = new StreamableHTTPClientWithSigV4Transport(
+     *          new URL("https://example.com/mcp"),
+     *          {
+     *              service: "lambda",
+     *              region: "ap-southeast-2",
+     *              credentials: {
+     *                  accessKeyId: "KEY",
+     *                  secretAccessKey: "SECRET",
+     *              }
+     *          }
+     *      );
+     * 
+     */
+    async openConnectionHttpTransport(transport: StreamableHTTPClientTransport): Promise<void> {
+
+        // if not open.
+        if (!this.open) {
+            try {
+                // create the transport to the server
+                // using the command and arguments
+                this.httpTransport = transport;
+
+                // open a connection to the MCP server.
+                await this.mcp.connect(this.httpTransport);
+
+                // connection open.
+                this.open = true;
+
+                // request.
+                await this.requestTools();
+                await this.requestPrompts();
+                await this.requestResources();
+
+            } catch (e) {
+                this.open = false;
+                if (this.logEvent) this.logEvent("error", "open", "open connection http custom", e);
+                throw e;
+            }
+        }
+    }
+
+    /**
      * request the tools list.
      * @returns {boolean} true if list call succeeded: else false.
      */
