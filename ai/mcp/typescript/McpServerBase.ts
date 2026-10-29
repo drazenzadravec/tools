@@ -130,6 +130,14 @@ export class McpServerBase {
     }
 
     /**
+     * set the MCP server, used to register Tools, Resource, Prompts.
+     * @param {McpServer} mcp  the MCP server.
+     */
+    setMcpServer(mcp: McpServer): void {
+        this.mcp = mcp;
+    }
+
+    /**
      * get the list of mcp http transports.
      * @returns {McpHttpTransportModel} the mcp http transports
      */
