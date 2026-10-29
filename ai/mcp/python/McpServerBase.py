@@ -90,6 +90,15 @@ class McpServerBase:
         """
         return self.mcp
 
+    def setMcpServer(self, mcp: FastMCP)-> None:
+        """
+        set the MCP server, used to register Tools, Resource, Prompts.
+
+        Args:
+            mcp:  the MCP server
+        """
+        self.mcp = mcp
+
     def registerTool(self, 
                      name: str, 
                      callback: Callable[..., Any],
