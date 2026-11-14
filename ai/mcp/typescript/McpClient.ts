@@ -1,14 +1,14 @@
 import {
     Client
-} from "@modelcontextprotocol/sdk/client/index.js";
+} from "@modelcontextprotocol/client";
 import {
     StdioClientTransport,
     StdioServerParameters
-} from "@modelcontextprotocol/sdk/client/stdio.js";
+} from "@modelcontextprotocol/client/stdio";
 import {
     StreamableHTTPClientTransport,
     StreamableHTTPClientTransportOptions
-} from "@modelcontextprotocol/sdk/client/streamableHttp.js";
+} from "@modelcontextprotocol/client";
 
 import {
     McpTool,
@@ -136,7 +136,7 @@ export class McpClient {
             return await this.mcp.callTool({
                 name: name,
                 arguments: args
-            }, undefined,
+            },
             {
                 timeout: this.timeout
             });

@@ -5,13 +5,13 @@ import {
     RegisteredResource,
     RegisteredResourceTemplate,
     ResourceTemplate
-} from "@modelcontextprotocol/sdk/server/mcp.js";
+} from "@modelcontextprotocol/server";
 import {
     StdioServerTransport
-} from "@modelcontextprotocol/sdk/server/stdio.js";
+} from "@modelcontextprotocol/server/stdio";
 import {
-    StreamableHTTPServerTransport
-} from "@modelcontextprotocol/sdk/server/streamableHttp.js";
+    WebStandardStreamableHTTPServerTransport
+} from "@modelcontextprotocol/server";
 
 import { randomUUID } from "node:crypto";
 
@@ -417,7 +417,7 @@ export class McpServerBase {
             });
             this.promptsCallback.push({
                 name: name,
-                callback: registeredPrompt.callback
+                callback: callback
             });
             result = true;
         } catch (e) {
@@ -606,7 +606,7 @@ export class McpServerBase {
                 if (!this.httpTransportStateless) {
 
                     // init new transport.
-                    const transport: StreamableHTTPServerTransport = new StreamableHTTPServerTransport({
+                    const transport: WebStandardStreamableHTTPServerTransport = new WebStandardStreamableHTTPServerTransport({
                         sessionIdGenerator: () => randomUUID(),
                         onsessioninitialized: (sessionId) => {
                             // Store the transport by session ID
@@ -643,7 +643,7 @@ export class McpServerBase {
                 else {
                     // stateless
                     // init new transport.
-                    const transport: StreamableHTTPServerTransport = new StreamableHTTPServerTransport({
+                    const transport: WebStandardStreamableHTTPServerTransport = new WebStandardStreamableHTTPServerTransport({
                         sessionIdGenerator: undefined
                     });
 
