@@ -4,8 +4,7 @@ from sympy import sympify
 from typing import Optional, Any, List, Union, Callable, Awaitable
 
 from mcp.types import ToolAnnotations
-from mcp.server.fastmcp import FastMCP
-from mcp.server.fastmcp.prompts.base import PromptArgument, Message, TextContent
+from mcp.server.mcpserver.prompts.base import PromptArgument, Message, TextContent
 
 from ..McpServerBase import McpServerBase
 from ..McpTypes import McpPromptHelper
@@ -57,7 +56,7 @@ class SymPyMath(McpServerBase):
         return self.registerPrompt(
             "MathExpressionEvaluator",
             self.mathExpressionEvaluatorPrompt,
-            "Evaluate the mathematical expression",
+            "Use SymPy to evaluate the mathematical expression",
             [ PromptArgument(name = "expression", description = "the SymPy mathematical expression", required = True) ]
         )
 
@@ -120,7 +119,7 @@ class SymPyMath(McpServerBase):
                 role = "user", 
                 content = TextContent(
                     type = "text", 
-                    text = f"evaluate the math expression: {expression}")
+                    text = f"Use SymPy to evaluate the math expression: {expression}")
             )
         ]
 
@@ -205,7 +204,7 @@ class SymPyMath(McpServerBase):
         registeredAll = True if (self.registerPrompt_MathExpressionResult() and registeredAll) else False
         registeredAll = True if (self.registerResource_SymPyDocsUrl() and registeredAll) else False
         registeredAll = True if (self.registerResource_SymPyDocsUrl_Version() and registeredAll) else False
-
+        
         # if all registered.
         return registeredAll
 
@@ -221,7 +220,7 @@ class SymPyMath(McpServerBase):
         # add prompt.
         prompts.append(McpPromptHelper(
             "MathExpressionEvaluator",
-            "evaluate the math expression: {expression}"
+            "Use SymPy to evaluate the math expression: {expression}"
         ))
 
         prompts.append(McpPromptHelper(
@@ -241,7 +240,7 @@ def mainSymPyMathServer(useStreamableHttp: bool = False) -> SymPyMath | None:
             useStreamableHttp:    use streamable HTTP to receiving messages.
     """
     # start server.
-    sympymath_server = SymPyMath()
+    sympymath_server = SymPyMath() 
 
     # if registered
     if (sympymath_server.register()):
