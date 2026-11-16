@@ -334,7 +334,7 @@ class McpServerBase:
                         tool.name,
                         tool.name,
                         tool.description,
-                        tool.schema,
+                        tool.input_schema,
                         McpToolParameters(parameters)
                     ))
         except Exception as e:

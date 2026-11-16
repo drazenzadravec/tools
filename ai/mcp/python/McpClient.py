@@ -451,8 +451,8 @@ class McpClient:
                                 tool.name,
                                 tool.name,
                                 tool.description,
-                                tool.schema,
-                                McpToolParameters(tool.schema)
+                                tool.input_schema,
+                                McpToolParameters(tool.input_schema)
                             ))
 
                 haslist = True
