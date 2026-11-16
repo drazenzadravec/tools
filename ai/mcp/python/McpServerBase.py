@@ -4,12 +4,12 @@ from collections.abc import AsyncIterator
 from pydantic import AnyUrl, TypeAdapter, BaseModel, Field
 from typing import Optional, Any, List, Union, Callable, Awaitable, Dict
 
-from mcp.server.fastmcp import FastMCP
-from mcp.server.fastmcp.tools.base import Tool
-from mcp.server.fastmcp.resources import Resource
-from mcp.server.fastmcp.resources.types import FunctionResource
-from mcp.server.fastmcp.prompts.base import Prompt, PromptArgument, PromptResult
-from mcp.server.fastmcp.resources.templates import ResourceTemplate
+from mcp.server import MCPServer
+from mcp.server.mcpserver.tools.base import Tool, ToolAnnotations
+from mcp.server.mcpserver.resources import Resource
+from mcp.server.mcpserver.resources.types import FunctionResource
+from mcp.server.mcpserver.resources.templates import ResourceTemplate
+from mcp.server.mcpserver.prompts.base import Prompt, PromptArgument, PromptResult
 
 from .McpTypes import McpTool, McpPrompt, McpResource, McpToolParameters
 
@@ -23,7 +23,8 @@ class McpServerBase:
                  version: str,
                  instructions: str,
                  capabilities: Any,
-                 stateless: bool = True):
+                 stateless: bool = True,
+                 jsonResponse: bool = True):
         """
         Args:
             name:    server name
@@ -31,6 +32,7 @@ class McpServerBase:
             instructions:    server instructions
             capabilities:    server capabilities
             stateless:       is http stateless: true: else false (default is true).
+            jsonResponse:    whether to use JSON response format (default is true).
 
         Example:
             name: "weather",
@@ -50,18 +52,18 @@ class McpServerBase:
         self.instructions = instructions
         self.capabilities = capabilities
         self.stateless = stateless
+        self.jsonResponse = jsonResponse
 
         # Create an MCP server
-        self.mcp: FastMCP = FastMCP(name=name, 
+        self.mcp: MCPServer = MCPServer(name=name, 
                                     instructions=instructions, 
-                                    stateless_http=stateless, 
-                                    json_response=True)
-        self.mcp._mcp_server.version = self.version
+                                    version=version)
 
     def __repr__(self):
         return f"McpServerBase(name={self.name}, " \
             f"instructions={self.instructions}, " \
             f"stateless={self.stateless}, " \
+            f"jsonResponse={self.jsonResponse}, " \
             f"version={self.version})"
 
     def onEvent(self, event: Callable[[str, str, str, Any], None]) -> None:
@@ -81,7 +83,7 @@ class McpServerBase:
         """
         return self.open
 
-    def getMcpServer(self) -> FastMCP:
+    def getMcpServer(self) -> MCPServer:
         """
         get the MCP server, used to register Tools, Resource, Prompts.
 
@@ -90,7 +92,7 @@ class McpServerBase:
         """
         return self.mcp
 
-    def setMcpServer(self, mcp: FastMCP)-> None:
+    def setMcpServer(self, mcp: MCPServer)-> None:
         """
         set the MCP server, used to register Tools, Resource, Prompts.
 
@@ -103,7 +105,7 @@ class McpServerBase:
                      name: str, 
                      callback: Callable[..., Any],
                      description: str | None = None,
-                     annotations: Any | None = None) -> bool:
+                     annotations: ToolAnnotations | None = None) -> bool:
         """
         registers a tool with a config object and callback.
 
@@ -332,7 +334,7 @@ class McpServerBase:
                         tool.name,
                         tool.name,
                         tool.description,
-                        tool.inputSchema,
+                        tool.schema,
                         McpToolParameters(parameters)
                     ))
         except Exception as e:
@@ -385,10 +387,10 @@ class McpServerBase:
                     # create the resource model.
                     resources.append(McpResource(
                         resource.name,
-                        resource.name ,
+                        resource.name,
                         resource.description,
                         resource.uri,
-                        resource.mimeType
+                        resource.mime_type
                     ))
         except Exception as e:
             if (self.logEvent):
@@ -402,10 +404,10 @@ class McpServerBase:
                     # create the resource model.
                     resources.append(McpResource(
                         resourceTemplate.name,
-                        resourceTemplate.name ,
+                        resourceTemplate.name,
                         resourceTemplate.description,
-                        resourceTemplate.uriTemplate,
-                        resourceTemplate.mimeType
+                        resourceTemplate.uri_template,
+                        resourceTemplate.mime_type
                     ))
         except Exception as e:
             if (self.logEvent):
@@ -426,7 +428,7 @@ class McpServerBase:
         """
         return await self.mcp.call_tool(name, arguments = args)
 
-    async def callPrompt(self, name: str, args: Dict[str, str] | None = None) -> Any | None:
+    async def callPrompt(self, name: str, args: Dict[str, Any] | None = None) -> Any | None:
         """
         read the resource.
 
@@ -491,7 +493,10 @@ class McpServerBase:
             try:
                 # ... set up server resources, tools, and prompts ...
                 # before starting server.
-                self.mcp.run(transport="streamable-http")
+                self.mcp.run(
+                    transport="streamable-http",
+                    json_response=self.jsonResponse,
+                    stateless_http=self.stateless)
 
                 # connection open.
                 self.open = True

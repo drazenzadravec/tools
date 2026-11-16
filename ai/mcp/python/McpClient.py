@@ -1,13 +1,15 @@
-import httpx
+import httpx2
 
-from mcp import ClientSession, StdioServerParameters
-from mcp.client.stdio import stdio_client
-from mcp.client.streamable_http import streamablehttp_client
+from mcp import Client, ClientSession, StdioServerParameters
+from mcp.client import Transport
+from mcp.client.streamable_http import streamable_http_client
 
 from datetime import timedelta
 from pydantic import AnyUrl, TypeAdapter
 from typing import Optional, Any, List, Union, Callable, Dict
 from contextlib import AsyncExitStack, _AsyncGeneratorContextManager
+
+from tenacity import P
 
 from .McpTypes import McpTool, McpPrompt, McpResource, McpToolParameters
 
@@ -18,17 +20,18 @@ class McpClient:
     """
     def __init__(self):
         self.open = False
-        self.timeout: timedelta = timedelta(seconds=60)  # default timeout 60 seconds
+        self.timeout: float = timedelta(seconds=60).total_seconds()  # default timeout 60 seconds
         self.logEvent: Callable[[str, str, str, Any], None] | None = None
 
         # Initialize session and client objects
-        self.session: Optional[ClientSession] = None
+        self.session: ClientSession = None
         self.exit_stack = AsyncExitStack()
 
         # init
         self.tools: List[McpTool] = []
         self.prompts: List[McpPrompt] = []
         self.resources: List[McpResource] = []
+        self.mcp: Client = None
 
     def onEvent(self, event: Callable[[str, str, str, Any], None]) -> None:
         """
@@ -44,7 +47,7 @@ class McpClient:
         Args:
             timeout:    the timeout in seconds.
         """
-        self.timeout = timeout
+        self.timeout = timeout.total_seconds()
 
     def isConnected(self) -> bool:
         """
@@ -137,6 +140,7 @@ class McpClient:
         disconnect from the MCP server.
         """
         self.session = None
+        self.mcp = None
         self.tools = []
         self.prompts = []
         self.resources = []
@@ -180,14 +184,10 @@ class McpClient:
                     args = [serverScriptPath],
                     env = None
                 )
-
+                    
                 # open a connection to the MCP server.
-                stdio_transport = await self.exit_stack.enter_async_context(stdio_client(server_params))
-                self.read, self.write = stdio_transport
-                self.session = await self.exit_stack.enter_async_context(ClientSession(self.read, self.write))
-
-                # start session.
-                await self.session.initialize()
+                self.mcp = await self.exit_stack.enter_async_context(Client(server_params, read_timeout_seconds=self.timeout))
+                self.session = self.mcp.session
                 
                 # client connected.
                 self.open = True
@@ -226,12 +226,8 @@ class McpClient:
                 )
 
                 # open a connection to the MCP server.
-                stdio_transport = await self.exit_stack.enter_async_context(stdio_client(server_params))
-                self.read, self.write = stdio_transport
-                self.session = await self.exit_stack.enter_async_context(ClientSession(self.read, self.write))
-
-                # start session.
-                await self.session.initialize()
+                self.mcp = await self.exit_stack.enter_async_context(Client(server_params, read_timeout_seconds=self.timeout))
+                self.session = self.mcp.session
                 
                 # client connected.
                 self.open = True
@@ -261,12 +257,8 @@ class McpClient:
             try:
 
                 # open a connection to the MCP server.
-                stdio_transport = await self.exit_stack.enter_async_context(stdio_client(server))
-                self.read, self.write = stdio_transport
-                self.session = await self.exit_stack.enter_async_context(ClientSession(self.read, self.write))
-
-                # start session.
-                await self.session.initialize()
+                self.mcp = await self.exit_stack.enter_async_context(Client(server, read_timeout_seconds=self.timeout))
+                self.session = self.mcp.session
                 
                 # client connected.
                 self.open = True
@@ -303,22 +295,22 @@ class McpClient:
         # if not open.
         if not self.open:
             try:
-                http_transport = None
+                http_transport: Transport = None
 
                 # open a connection to the MCP server.
                 if(requestInit is None):
                     http_transport = await self.exit_stack.enter_async_context(
-                        streamablehttp_client(serverUrl, timeout=self.timeout))
+                        streamable_http_client(url=serverUrl, 
+                            http_client= httpx2.AsyncClient(timeout=httpx2.Timeout(self.timeout, read=self.timeout * 2.0))))
                 else:
                     http_transport = await self.exit_stack.enter_async_context(
-                        streamablehttp_client(url=serverUrl, headers=requestInit, timeout=self.timeout))
+                        streamable_http_client(
+                            url=serverUrl, 
+                            http_client= httpx2.AsyncClient(headers=requestInit, timeout=httpx2.Timeout(self.timeout, read=self.timeout * 2.0))))
 
                 # get streams
-                self.read, self.write, _, = http_transport
+                self.read, self.write = http_transport
                 self.session = await self.exit_stack.enter_async_context(ClientSession(self.read, self.write))
-                
-                # Initialize the connection
-                await self.session.initialize()
                 
                 # client connected.
                 self.open = True
@@ -334,7 +326,7 @@ class McpClient:
                     self.logEvent("error", "open", "open connection http", e)
                 raise  # Re-throws the same exception
 
-    async def openConnectionHttpCustom(self, serverUrl: str, headers: Dict[str, str] | None = None, auth: httpx.Auth | None = None):
+    async def openConnectionHttpCustom(self, serverUrl: str, headers: Dict[str, str] | None = None, auth: httpx2.Auth | None = None):
         """
         connect to the MCP server.
         start receiving messages on streamable HTTP.
@@ -356,18 +348,20 @@ class McpClient:
         # if not open.
         if not self.open:
             try:
-                http_transport = None
+                http_transport: Transport = None
 
                 # open a connection to the MCP server.
                 http_transport = await self.exit_stack.enter_async_context(
-                    streamablehttp_client(url=serverUrl, headers=headers, timeout=self.timeout, auth=auth))
+                        streamable_http_client(
+                            url=serverUrl, 
+                            http_client= httpx2.AsyncClient(
+                                auth=auth,
+                                headers=headers, 
+                                timeout=httpx2.Timeout(self.timeout, read=self.timeout * 2.0))))
                 
-                # get streams
-                self.read, self.write, _, = http_transport
+                # open a connection to the MCP server.
+                self.read, self.write = http_transport
                 self.session = await self.exit_stack.enter_async_context(ClientSession(self.read, self.write))
-                
-                # Initialize the connection
-                await self.session.initialize()
                 
                 # client connected.
                 self.open = True
@@ -410,17 +404,14 @@ class McpClient:
         # if not open.
         if not self.open:
             try:
-                http_transport = None
+                http_transport: Transport = None
 
                 # open a connection to the MCP server.
                 http_transport = await self.exit_stack.enter_async_context(transport)
                 
-                # get streams
-                self.read, self.write, _, = http_transport
+                # open a connection to the MCP server.
+                self.read, self.write = http_transport
                 self.session = await self.exit_stack.enter_async_context(ClientSession(self.read, self.write))
-                
-                # Initialize the connection
-                await self.session.initialize()
                 
                 # client connected.
                 self.open = True
@@ -460,8 +451,8 @@ class McpClient:
                                 tool.name,
                                 tool.name,
                                 tool.description,
-                                tool.inputSchema,
-                                McpToolParameters(tool.inputSchema)
+                                tool.schema,
+                                McpToolParameters(tool.schema)
                             ))
 
                 haslist = True
@@ -530,7 +521,7 @@ class McpClient:
                                 resource.name,
                                 resource.description,
                                 resource.uri,
-                                resource.mimeType
+                                resource.mime_type
                             ))
 
                 haslist = True
@@ -543,15 +534,15 @@ class McpClient:
                 # load all resources.
                 resourcesResultTemplates = await self.session.list_resource_templates()
                 if resourcesResultTemplates is not None:
-                    if resourcesResultTemplates.resourceTemplates is not None:
-                        for resource in resourcesResultTemplates.resourceTemplates:
+                    if resourcesResultTemplates.resource_templates is not None:
+                        for resource in resourcesResultTemplates.resource_templates:
                             # create the resource model.
                             self.resources.append(McpResource(
                                 resource.name,
                                 resource.name,
                                 resource.description,
-                                resource.uriTemplate,
-                                resource.mimeType
+                                resource.uri_template,
+                                resource.mime_type
                             ))
 
                 haslist = True
