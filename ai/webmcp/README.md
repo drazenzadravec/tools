@@ -6,7 +6,7 @@ those built into the browser, hosted in iframes, or running in extensions to act
 designed for human interaction. A declarative API based on HTML <form> elements is also being explored.
 
 ### Support
-TypeScript applications of server MCP implementations supporting tools.
+TypeScript applications of server WebMCP implementations supporting tools.
 
 ### See
 
